@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>C-REITs | China Real Estate Investment Trusts Map</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+<rect width='100' height='100' rx='18' fill='%230f172a'/>
+<rect x='28' y='20' width='44' height='60' fill='white'/>
+<rect x='38' y='30' width='8' height='8' fill='%230f172a'/>
+<rect x='54' y='30' width='8' height='8' fill='%230f172a'/>
+<rect x='38' y='46' width='8' height='8' fill='%230f172a'/>
+<rect x='54' y='46' width='8' height='8' fill='%230f172a'/>
+</svg>">
+
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+            <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+        <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/china.js"></script>
+
+</head>
+<body>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Microsoft YaHei", sans-serif;
+}
+
+#container {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.nav-container { position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 8px; flex-wrap: wrap; max-width: 600px; }
+.nav-btn { padding: 6px 12px; border-radius: 4px; border: 2px solid; background: white; cursor: pointer; font-weight: bold; font-size: 13px; }
+.btn-china { border-color: #3498db; color: #3498db; }
+.btn-jingjinji { border-color: #e74c3c; color: #e74c3c; }
+.btn-changsan { border-color: #2ecc71; color: #2ecc71; }
+.btn-wanqu { border-color: #f39c12; color: #f39c12; }
+.btn-chengyu { border-color: #9b59b6; color: #9b59b6; }
+.btn-changzhong { border-color: #1abc9c; color: #1abc9c; }
+
+.zoom-indicator {
+    position: absolute; top: 70px; left: 20px; z-index: 1000;
+    background: rgba(52, 152, 219, 0.9); color: white; padding: 8px 15px;
+    border-radius: 6px; font-size: 12px; font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.stats-panel {
+    position: absolute; top: 20px; right: 20px; z-index: 1000; width: 340px;
+    background: rgba(255, 255, 255, 0.95); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: "Microsoft YaHei", sans-serif; padding: 12px;
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+.stats-panel.minimized {
+    width: auto;
+    min-width: 200px;
+}
+.stats-panel.minimized #stats-content {
+    display: none !important;
+}
+.stats-title { font-size: 13px; color: #666; }
+.stats-total { font-size: 22px; color: #3498db; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 10px; }
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.panel-controls {
+    display: flex;
+    gap: 6px;
+}
+.control-btn {
+    cursor: pointer;
+    padding: 4px 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #666;
+    border: 1px solid #ddd;
+    transition: all 0.2s;
+}
+.control-btn:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+.minimize-btn {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 2px 8px;
+}
+.stats-list { 
+    flex: 1;
+    overflow-y: auto; 
+    font-size: 12px;
+    min-height: 0;
+}
+
+/* 三层层次结构样式 */
+.stats-item { border-bottom: 1px solid #f0f0f0; padding: 5px 0; }
+
+/* 第1层: 资产类型 */
+.level-1-header { 
+    display: flex; justify-content: space-between; cursor: pointer; 
+    font-weight: bold; padding: 6px 8px; background: #f8f9fa; 
+    border-left: 3px solid #3498db; margin: 2px 0;
+}
+.level-1-header:hover { background: #e3f2fd; }
+
+/* 第2层: REITs名称 */
+.level-2-container { display: none; padding-left: 15px; }
+.level-2-item { margin: 4px 0; }
+.level-2-header { 
+    cursor: pointer; color: #2c3e50; font-size: 11px; 
+    font-weight: 600; padding: 4px 6px; background: #fff;
+    border-left: 2px solid #95a5a6; display: flex; 
+    justify-content: space-between; align-items: center;
+}
+.level-2-header:hover { background: #ecf0f1; color: #3498db; }
+
+/* 第3层: 城市+底层资产 */
+.level-3-detail { 
+    display: none; padding: 6px 0 6px 15px; 
+    color: #34495e; font-size: 10px; line-height: 1.8;
+}
+.city-section { 
+    margin: 4px 0; 
+    padding: 4px 0;
+    border-bottom: 1px dashed #ecf0f1;
+}
+.city-section:last-child {
+    border-bottom: none;
+}
+.city-name { 
+    font-weight: 600; 
+    color: #16a085; 
+    margin-bottom: 2px;
+}
+.asset-item { 
+    padding: 1px 0 1px 12px;
+    color: #7f8c8d;
+    border-left: 1px solid #d5dbdb;
+    margin-left: 4px;
+}
+
+.search-box-container { position: absolute; top: 110px; left: 20px; z-index: 1000; width: 280px; }
+.search-input-wrapper { position: relative; display: flex; align-items: center; }
+#search-input { width: 100%; padding: 10px; border: 2px solid #3498db; border-radius: 6px; outline: none; box-sizing: border-box; font-size: 13px; }
+.search-results-list { background: white; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; display: none; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; margin-top: 4px; }
+.search-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s; }
+.search-item:hover { background: #f5f5f5; }
+.search-item:last-child { border-bottom: none; }
+.search-close-btn { position: absolute; top: 4px; right: 6px; cursor: pointer; color: #999; font-size: 16px; padding: 2px 6px; z-index: 10; }
+.search-close-btn:hover { color: #d32f2f; }
+.hint-text { position: absolute; top: 165px; left: 20px; z-index: 999; font-size: 11px; color: #888; max-width: 280px; line-height: 1.4; }
+</style>
+
+<div class="nav-container">
+    <button class="nav-btn btn-china" onclick="navigateTo(105, 36, 1.5)">全国</button>
+    <button class="nav-btn btn-jingjinji" onclick="navigateTo(116.4, 39.5, 6)">京津冀</button>
+    <button class="nav-btn btn-changsan" onclick="navigateTo(120.5, 31.5, 6)">长三角</button>
+    <button class="nav-btn btn-wanqu" onclick="navigateTo(113.5, 22.8, 7)">大湾区</button>
+    <button class="nav-btn btn-chengyu" onclick="navigateTo(105.5, 30.0, 6)">成渝</button>
+    <button class="nav-btn btn-changzhong" onclick="navigateTo(114.3, 30.6, 6)">长江中游</button>
+</div>
+
+<div class="zoom-indicator" id="zoom-indicator">📍 当前:省份视图</div>
+
+<div class="stats-panel" id="stats-panel">
+    <div class="stats-header">
+        <div>
+            <div class="stats-title">上市 REITs 总数</div>
+            <div class="stats-total">79 <span style="font-size:12px; font-weight:normal">只</span></div>
+        </div>
+        <div class="panel-controls">
+            <button class="control-btn" id="collapse-all-btn" onclick="collapseAll()" title="收起全部展开项">收起全部</button>
+            <button class="control-btn minimize-btn" id="minimize-btn" onclick="minimizePanel()" title="最小化面板">−</button>
+        </div>
+    </div>
+    <div id="stats-content" class="stats-list"></div>
+</div>
+
+<div class="search-box-container">
+    <div class="search-input-wrapper">
+        <input type="text" id="search-input" placeholder="🔍 搜索REITs名称或底层资产" oninput="onSearchInput()" onkeydown="handleSearchKeydown(event)">
+    </div>
+    <div id="search-results" class="search-results-list"></div>
+</div>
+<div class="hint-text">💡 提示: 双击地图圆点可放大</div>
+
+<script>
+var provinceData = [{"name": "上海市", "value": [121.473662, 31.230372, 9, "<b>上海市(共有 9 个REITs项目)</b><br/>• 华夏基金华润有巢(保租房)<br/>• 华安外高桥(物流仓储)<br/>• 华安张江产业园(产业园)<br/>• 华安百联消费(消费商业)<br/>• 国泰海通东久新经济(产业园)<br/>• 国泰海通临港创新产业园(产业园)<br/>• 国泰海通城投宽庭保租房(保租房)<br/>• 招商科创(产业园)<br/>• 汇添富上海地产租赁住房(保租房)"]}, {"name": "浙江省", "value": [120.152585, 30.266597, 9, "<b>浙江省(共有 9 个REITs项目)</b><br/>• 中金印力消费(消费商业)<br/>• 中金唯品会奥莱(消费商业)<br/>• 中银中外运仓储物流(物流仓储)<br/>• 华夏华电清洁能源(能源)<br/>• 华夏和达高科(产业园)<br/>• 华泰宝湾物流(物流仓储)<br/>• 平安宁波交投(交通设施)<br/>• 浙商沪杭甬(交通设施)<br/>• 银华绍兴原水水利(水利)"]}, {"name": "北京市", "value": [116.407394, 39.904211, 9, "<b>北京市(共有 9 个REITs项目)</b><br/>• 中航首钢绿能(生态环保)<br/>• 中金亦庄产业园(产业园)<br/>• 中金普洛斯(物流仓储)<br/>• 中金联东科创(产业园)<br/>• 创金合信首农(产业园)<br/>• 华夏北京保障房(保租房)<br/>• 华夏金隅智造工场(产业园)<br/>• 嘉实物美消费(消费商业)<br/>• 建信中关村(产业园)"]}, {"name": "湖北省", "value": [114.341745, 30.546557, 8, "<b>湖北省(共有 8 个REITs项目)</b><br/>• 中航京能光伏(能源)<br/>• 中金湖北科投光谷(产业园)<br/>• 华夏中国交建(交通设施)<br/>• 华夏越秀高速(交通设施)<br/>• 华夏首创奥莱(消费商业)<br/>• 南方顺丰物流(物流仓储)<br/>• 嘉实京东仓储基础设施(物流仓储)<br/>• 汇添富九州通医药(物流仓储)"]}, {"name": "山东省", "value": [117.019915, 36.671156, 6, "<b>山东省(共有 6 个REITs项目)</b><br/>• 中金中国绿发商业(消费商业)<br/>• 中金山东高速(交通设施)<br/>• 中金普洛斯(物流仓储)<br/>• 华夏华润商业(消费商业)<br/>• 华夏首创奥莱(消费商业)<br/>• 国泰海通济南能源供热(市政公用)"]}, {"name": "安徽省", "value": [117.329949, 31.733806, 5, "<b>安徽省(共有 5 个REITs项目)</b><br/>• 中金安徽交控(交通设施)<br/>• 华夏合肥高新(产业园)<br/>• 南方顺丰物流(物流仓储)<br/>• 富国首创水务(生态环保)<br/>• 招商高速公路(交通设施)"]}, {"name": "广东省", "value": [113.26641, 23.132324, 14, "<b>广东省(共有 14 个REITs项目)</b><br/>• 中金普洛斯(物流仓储)<br/>• 华夏中海商业(消费商业)<br/>• 华夏凯德商业(消费商业)<br/>• 华夏安博仓储(物流仓储)<br/>• 华夏深国际(物流仓储)<br/>• 南方顺丰物流(物流仓储)<br/>• 博时蛇口产园(产业园)<br/>• 富国首创水务(生态环保)<br/>• 平安广州广河(交通设施)<br/>• 招商基金蛇口租赁住房(保租房)<br/>• 易方达广开产园(产业园)<br/>• 红土创新深圳安居(保租房)<br/>• 红土创新盐田港(物流仓储)<br/>• 鹏华深圳能源(能源)"]}, {"name": "重庆市", "value": [106.551643, 29.562849, 5, "<b>重庆市(共有 5 个REITs项目)</b><br/>• 中金普洛斯(物流仓储)<br/>• 中金重庆两江(产业园)<br/>• 嘉实京东仓储基础设施(物流仓储)<br/>• 国泰海通东久新经济(产业园)<br/>• 国金中国铁建(交通设施)"]}, {"name": "内蒙古自治区", "value": [111.76629, 40.81739, 2, "<b>内蒙古自治区(共有 2 个REITs项目)</b><br/>• 中信建投明阳智能新能源(能源)<br/>• 工银蒙能清洁能源(能源)"]}, {"name": "河北省", "value": [114.530235, 38.037433, 4, "<b>河北省(共有 4 个REITs项目)</b><br/>• 中信建投明阳智能新能源(能源)<br/>• 南方润泽科技数据中心(数据中心)<br/>• 嘉实京东仓储基础设施(物流仓储)<br/>• 工银河北高速(交通设施)"]}, {"name": "湖南省", "value": [112.9836, 28.112743, 3, "<b>湖南省(共有 3 个REITs项目)</b><br/>• 华夏凯德商业(消费商业)<br/>• 华夏金茂商业(消费商业)<br/>• 易方达深高速(交通设施)"]}, {"name": "天津市", "value": [117.200983, 39.084158, 3, "<b>天津市(共有 3 个REITs项目)</b><br/>• 中银中外运仓储物流(物流仓储)<br/>• 华泰宝湾物流(物流仓储)<br/>• 博时津开产园(产业园)"]}, {"name": "四川省", "value": [104.075809, 30.651239, 4, "<b>四川省(共有 4 个REITs项目)</b><br/>• 中银中外运仓储物流(物流仓储)<br/>• 华夏大悦城商业(消费商业)<br/>• 嘉实中国电建清洁能源(能源)<br/>• 广发成都高投产业园(产业园)"]}, {"name": "江苏省", "value": [118.762765, 32.060875, 12, "<b>江苏省(共有 12 个REITs项目)</b><br/>• 东吴苏园产业(产业园)<br/>• 中信建投国家电投新能源(能源)<br/>• 中航易商仓储物流(物流仓储)<br/>• 中金普洛斯(物流仓储)<br/>• 中银中外运仓储物流(物流仓储)<br/>• 华夏南京交通高速公路(交通设施)<br/>• 华泰南京建邺(产业园)<br/>• 华泰宝湾物流(物流仓储)<br/>• 华泰江苏交控(交通设施)<br/>• 华泰苏州恒泰租赁住房(保租房)<br/>• 南方万国数据中心(数据中心)<br/>• 国泰海通东久新经济(产业园)"]}, {"name": "辽宁省", "value": [123.431382, 41.836175, 1, "<b>辽宁省(共有 1 个REITs项目)</b><br/>• 中信建投沈阳国际软件园(产业园)"]}, {"name": "福建省", "value": [119.295143, 26.100779, 2, "<b>福建省(共有 2 个REITs项目)</b><br/>• 中金厦门安居(保租房)<br/>• 易方达华威市场(消费商业)"]}, {"name": "新疆维吾尔自治区", "value": [87.627704, 43.793026, 2, "<b>新疆维吾尔自治区(共有 2 个REITs项目)</b><br/>• 华夏中核清洁能源(能源)<br/>• 华夏特变电工新能源(能源)"]}, {"name": "陕西省", "value": [108.954347, 34.265502, 1, "<b>陕西省(共有 1 个REITs项目)</b><br/>• 中航京能光伏(能源)"]}, {"name": "云南省", "value": [102.710002, 25.045806, 1, "<b>云南省(共有 1 个REITs项目)</b><br/>• 中航京能光伏(能源)"]}, {"name": "贵州省", "value": [106.70546, 26.600055, 1, "<b>贵州省(共有 1 个REITs项目)</b><br/>• 华夏深国际(物流仓储)"]}];
+var cityData = [{"name": "上海市", "value": [121.473662, 31.230372, 9, "<b>上海市(共有 9 个REITs项目)</b><br/>• 华安张江产业园(产业园)<br/>• 华安百联消费(消费商业)<br/>• 招商科创(产业园)<br/>• 国泰海通临港创新产业园(产业园)<br/>• 国泰海通城投宽庭保租房(保租房)<br/>• 华安外高桥(物流仓储)<br/>• 汇添富上海地产租赁住房(保租房)<br/>• 华夏基金华润有巢(保租房)<br/>• 国泰海通东久新经济(产业园)"]}, {"name": "杭州市", "value": [120.209789, 30.24692, 4, "<b>杭州市(共有 4 个REITs项目)</b><br/>• 浙商沪杭甬(交通设施)<br/>• 华夏华电清洁能源(能源)<br/>• 华夏和达高科(产业园)<br/>• 中金印力消费(消费商业)"]}, {"name": "北京市", "value": [116.407394, 39.904211, 9, "<b>北京市(共有 9 个REITs项目)</b><br/>• 中金联东科创(产业园)<br/>• 嘉实物美消费(消费商业)<br/>• 创金合信首农(产业园)<br/>• 中金普洛斯(物流仓储)<br/>• 华夏北京保障房(保租房)<br/>• 中金亦庄产业园(产业园)<br/>• 华夏金隅智造工场(产业园)<br/>• 建信中关村(产业园)<br/>• 中航首钢绿能(生态环保)"]}, {"name": "武汉市", "value": [114.305469, 30.593175, 6, "<b>武汉市(共有 6 个REITs项目)</b><br/>• 华夏首创奥莱(消费商业)<br/>• 中金湖北科投光谷(产业园)<br/>• 汇添富九州通医药(物流仓储)<br/>• 嘉实京东仓储基础设施(物流仓储)<br/>• 华夏越秀高速(交通设施)<br/>• 南方顺丰物流(物流仓储)"]}, {"name": "济南市", "value": [117.120098, 36.6512, 3, "<b>济南市(共有 3 个REITs项目)</b><br/>• 华夏首创奥莱(消费商业)<br/>• 国泰海通济南能源供热(市政公用)<br/>• 中金中国绿发商业(消费商业)"]}, {"name": "合肥市", "value": [117.227219, 31.820591, 3, "<b>合肥市(共有 3 个REITs项目)</b><br/>• 富国首创水务(生态环保)<br/>• 华夏合肥高新(产业园)<br/>• 南方顺丰物流(物流仓储)"]}, {"name": "深圳市", "value": [114.057939, 22.543527, 8, "<b>深圳市(共有 8 个REITs项目)</b><br/>• 富国首创水务(生态环保)<br/>• 博时蛇口产园(产业园)<br/>• 红土创新盐田港(物流仓储)<br/>• 华夏深国际(物流仓储)<br/>• 南方顺丰物流(物流仓储)<br/>• 鹏华深圳能源(能源)<br/>• 红土创新深圳安居(保租房)<br/>• 招商基金蛇口租赁住房(保租房)"]}, {"name": "菏泽市", "value": [115.480656, 35.23375, 1, "<b>菏泽市(共有 1 个REITs项目)</b><br/>• 中金山东高速(交通设施)"]}, {"name": "重庆市", "value": [106.551643, 29.562849, 5, "<b>重庆市(共有 5 个REITs项目)</b><br/>• 国金中国铁建(交通设施)<br/>• 中金重庆两江(产业园)<br/>• 中金普洛斯(物流仓储)<br/>• 国泰海通东久新经济(产业园)<br/>• 嘉实京东仓储基础设施(物流仓储)"]}, {"name": "芜湖市", "value": [118.432941, 31.352859, 1, "<b>芜湖市(共有 1 个REITs项目)</b><br/>• 中金安徽交控(交通设施)"]}, {"name": "赤峰市", "value": [118.88694, 42.257843, 1, "<b>赤峰市(共有 1 个REITs项目)</b><br/>• 中信建投明阳智能新能源(能源)"]}, {"name": "沧州市", "value": [116.838834, 38.304477, 1, "<b>沧州市(共有 1 个REITs项目)</b><br/>• 中信建投明阳智能新能源(能源)"]}, {"name": "长沙市", "value": [112.938884, 28.22808, 2, "<b>长沙市(共有 2 个REITs项目)</b><br/>• 华夏金茂商业(消费商业)<br/>• 华夏凯德商业(消费商业)"]}, {"name": "咸宁市", "value": [114.322616, 29.841362, 1, "<b>咸宁市(共有 1 个REITs项目)</b><br/>• 华夏中国交建(交通设施)"]}, {"name": "天津市", "value": [117.200983, 39.084158, 3, "<b>天津市(共有 3 个REITs项目)</b><br/>• 博时津开产园(产业园)<br/>• 中银中外运仓储物流(物流仓储)<br/>• 华泰宝湾物流(物流仓储)"]}, {"name": "甘孜藏族自治州", "value": [101.96231, 30.04952, 1, "<b>甘孜藏族自治州(共有 1 个REITs项目)</b><br/>• 嘉实中国电建清洁能源(能源)"]}, {"name": "苏州市", "value": [120.585728, 31.2974, 8, "<b>苏州市(共有 8 个REITs项目)</b><br/>• 东吴苏园产业(产业园)<br/>• 中金普洛斯(物流仓储)<br/>• 南方万国数据中心(数据中心)<br/>• 华泰江苏交控(交通设施)<br/>• 中航易商仓储物流(物流仓储)<br/>• 华泰苏州恒泰租赁住房(保租房)<br/>• 国泰海通东久新经济(产业园)<br/>• 中银中外运仓储物流(物流仓储)"]}, {"name": "盐城市", "value": [120.163107, 33.347708, 1, "<b>盐城市(共有 1 个REITs项目)</b><br/>• 中信建投国家电投新能源(能源)"]}, {"name": "沈阳市", "value": [123.465035, 41.677284, 1, "<b>沈阳市(共有 1 个REITs项目)</b><br/>• 中信建投沈阳国际软件园(产业园)"]}, {"name": "益阳市", "value": [112.355129, 28.554349, 1, "<b>益阳市(共有 1 个REITs项目)</b><br/>• 易方达深高速(交通设施)"]}, {"name": "宁波市", "value": [121.622485, 29.859971, 2, "<b>宁波市(共有 2 个REITs项目)</b><br/>• 平安宁波交投(交通设施)<br/>• 中金唯品会奥莱(消费商业)"]}, {"name": "广州市", "value": [113.264385, 23.12911, 5, "<b>广州市(共有 5 个REITs项目)</b><br/>• 中金普洛斯(物流仓储)<br/>• 华夏凯德商业(消费商业)<br/>• 易方达广开产园(产业园)<br/>• 平安广州广河(交通设施)<br/>• 华夏安博仓储(物流仓储)"]}, {"name": "江门市", "value": [113.081542, 22.57899, 1, "<b>江门市(共有 1 个REITs项目)</b><br/>• 中金普洛斯(物流仓储)"]}, {"name": "青岛市", "value": [120.382621, 36.067131, 2, "<b>青岛市(共有 2 个REITs项目)</b><br/>• 中金普洛斯(物流仓储)<br/>• 华夏华润商业(消费商业)"]}, {"name": "佛山市", "value": [113.121435, 23.021478, 2, "<b>佛山市(共有 2 个REITs项目)</b><br/>• 中金普洛斯(物流仓储)<br/>• 华夏中海商业(消费商业)"]}, {"name": "厦门市", "value": [118.089204, 24.479664, 1, "<b>厦门市(共有 1 个REITs项目)</b><br/>• 中金厦门安居(保租房)"]}, {"name": "南京市", "value": [118.796682, 32.05957, 3, "<b>南京市(共有 3 个REITs项目)</b><br/>• 华夏南京交通高速公路(交通设施)<br/>• 华泰南京建邺(产业园)<br/>• 华泰宝湾物流(物流仓储)"]}, {"name": "保定市", "value": [115.464589, 38.874434, 1, "<b>保定市(共有 1 个REITs项目)</b><br/>• 工银河北高速(交通设施)"]}, {"name": "南通市", "value": [120.894676, 31.981143, 1, "<b>南通市(共有 1 个REITs项目)</b><br/>• 国泰海通东久新经济(产业园)"]}, {"name": "常州市", "value": [119.974061, 31.811226, 1, "<b>常州市(共有 1 个REITs项目)</b><br/>• 国泰海通东久新经济(产业园)"]}, {"name": "无锡市", "value": [120.31191, 31.491169, 2, "<b>无锡市(共有 2 个REITs项目)</b><br/>• 国泰海通东久新经济(产业园)<br/>• 中银中外运仓储物流(物流仓储)"]}, {"name": "哈密市", "value": [93.515224, 42.819541, 1, "<b>哈密市(共有 1 个REITs项目)</b><br/>• 华夏特变电工新能源(能源)"]}, {"name": "成都市", "value": [104.066794, 30.572893, 3, "<b>成都市(共有 3 个REITs项目)</b><br/>• 中银中外运仓储物流(物流仓储)<br/>• 广发成都高投产业园(产业园)<br/>• 华夏大悦城商业(消费商业)"]}, {"name": "金华市", "value": [119.647229, 29.079208, 1, "<b>金华市(共有 1 个REITs项目)</b><br/>• 中银中外运仓储物流(物流仓储)"]}, {"name": "榆林市", "value": [109.734474, 38.285369, 1, "<b>榆林市(共有 1 个REITs项目)</b><br/>• 中航京能光伏(能源)"]}, {"name": "随州市", "value": [113.382515, 31.690191, 1, "<b>随州市(共有 1 个REITs项目)</b><br/>• 中航京能光伏(能源)"]}, {"name": "保山市", "value": [99.161761, 25.112046, 1, "<b>保山市(共有 1 个REITs项目)</b><br/>• 中航京能光伏(能源)"]}, {"name": "廊坊市", "value": [116.683752, 39.538047, 2, "<b>廊坊市(共有 2 个REITs项目)</b><br/>• 嘉实京东仓储基础设施(物流仓储)<br/>• 南方润泽科技数据中心(数据中心)"]}, {"name": "孝感市", "value": [113.957037, 30.917766, 1, "<b>孝感市(共有 1 个REITs项目)</b><br/>• 华夏越秀高速(交通设施)"]}, {"name": "亳州市", "value": [115.77867, 33.844592, 1, "<b>亳州市(共有 1 个REITs项目)</b><br/>• 招商高速公路(交通设施)"]}, {"name": "黔南布依族苗族自治州", "value": [107.522171, 26.253275, 1, "<b>黔南布依族苗族自治州(共有 1 个REITs项目)</b><br/>• 华夏深国际(物流仓储)"]}, {"name": "嘉兴市", "value": [120.75547, 30.746191, 1, "<b>嘉兴市(共有 1 个REITs项目)</b><br/>• 华泰宝湾物流(物流仓储)"]}, {"name": "东莞市", "value": [113.751799, 23.020673, 1, "<b>东莞市(共有 1 个REITs项目)</b><br/>• 华夏安博仓储(物流仓储)"]}, {"name": "乌兰察布市", "value": [113.132584, 40.994785, 1, "<b>乌兰察布市(共有 1 个REITs项目)</b><br/>• 工银蒙能清洁能源(能源)"]}, {"name": "包头市", "value": [109.953504, 40.621157, 1, "<b>包头市(共有 1 个REITs项目)</b><br/>• 工银蒙能清洁能源(能源)"]}, {"name": "福州市", "value": [119.296389, 26.074268, 1, "<b>福州市(共有 1 个REITs项目)</b><br/>• 易方达华威市场(消费商业)"]}, {"name": "绍兴市", "value": [120.580364, 30.030192, 1, "<b>绍兴市(共有 1 个REITs项目)</b><br/>• 银华绍兴原水水利(水利)"]}, {"name": "和田市", "value": [79.913534, 37.112148, 1, "<b>和田市(共有 1 个REITs项目)</b><br/>• 华夏中核清洁能源(能源)"]}];
+var allSecurities = [{"name": "华安张江产业园", "full_name": "华安张江产业园(产业园)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "产业园"}, {"name": "浙商沪杭甬", "full_name": "浙商沪杭甬(交通设施)", "city": "杭州市", "lon": 120.209789, "lat": 30.24692, "asset_type": "交通设施"}, {"name": "华安百联消费", "full_name": "华安百联消费(消费商业)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "消费商业"}, {"name": "中金联东科创", "full_name": "中金联东科创(产业园)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "产业园"}, {"name": "华夏首创奥莱", "full_name": "华夏首创奥莱(消费商业)", "city": "武汉市", "lon": 114.305469, "lat": 30.593175, "asset_type": "消费商业"}, {"name": "华夏首创奥莱", "full_name": "华夏首创奥莱(消费商业)", "city": "济南市", "lon": 117.120098, "lat": 36.6512, "asset_type": "消费商业"}, {"name": "富国首创水务", "full_name": "富国首创水务(生态环保)", "city": "合肥市", "lon": 117.227219, "lat": 31.820591, "asset_type": "生态环保"}, {"name": "富国首创水务", "full_name": "富国首创水务(生态环保)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "生态环保"}, {"name": "中金山东高速", "full_name": "中金山东高速(交通设施)", "city": "菏泽市", "lon": 115.480656, "lat": 35.23375, "asset_type": "交通设施"}, {"name": "国金中国铁建", "full_name": "国金中国铁建(交通设施)", "city": "重庆市", "lon": 106.551643, "lat": 29.562849, "asset_type": "交通设施"}, {"name": "中金安徽交控", "full_name": "中金安徽交控(交通设施)", "city": "芜湖市", "lon": 118.432941, "lat": 31.352859, "asset_type": "交通设施"}, {"name": "中金重庆两江", "full_name": "中金重庆两江(产业园)", "city": "重庆市", "lon": 106.551643, "lat": 29.562849, "asset_type": "产业园"}, {"name": "嘉实物美消费", "full_name": "嘉实物美消费(消费商业)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "消费商业"}, {"name": "招商科创", "full_name": "招商科创(产业园)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "产业园"}, {"name": "中信建投明阳智能新能源", "full_name": "中信建投明阳智能新能源(能源)", "city": "赤峰市", "lon": 118.88694, "lat": 42.257843, "asset_type": "能源"}, {"name": "中信建投明阳智能新能源", "full_name": "中信建投明阳智能新能源(能源)", "city": "沧州市", "lon": 116.838834, "lat": 38.304477, "asset_type": "能源"}, {"name": "华夏华电清洁能源", "full_name": "华夏华电清洁能源(能源)", "city": "杭州市", "lon": 120.209789, "lat": 30.24692, "asset_type": "能源"}, {"name": "华夏金茂商业", "full_name": "华夏金茂商业(消费商业)", "city": "长沙市", "lon": 112.938884, "lat": 28.22808, "asset_type": "消费商业"}, {"name": "华夏中国交建", "full_name": "华夏中国交建(交通设施)", "city": "咸宁市", "lon": 114.322616, "lat": 29.841362, "asset_type": "交通设施"}, {"name": "中金湖北科投光谷", "full_name": "中金湖北科投光谷(产业园)", "city": "武汉市", "lon": 114.305469, "lat": 30.593175, "asset_type": "产业园"}, {"name": "国泰海通临港创新产业园", "full_name": "国泰海通临港创新产业园(产业园)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "产业园"}, {"name": "博时津开产园", "full_name": "博时津开产园(产业园)", "city": "天津市", "lon": 117.200983, "lat": 39.084158, "asset_type": "产业园"}, {"name": "嘉实中国电建清洁能源", "full_name": "嘉实中国电建清洁能源(能源)", "city": "甘孜藏族自治州", "lon": 101.96231, "lat": 30.04952, "asset_type": "能源"}, {"name": "东吴苏园产业", "full_name": "东吴苏园产业(产业园)", "city": "苏州市", "lon": 120.585728, "lat": 31.2974, "asset_type": "产业园"}, {"name": "中信建投国家电投新能源", "full_name": "中信建投国家电投新能源(能源)", "city": "盐城市", "lon": 120.163107, "lat": 33.347708, "asset_type": "能源"}, {"name": "中信建投沈阳国际软件园", "full_name": "中信建投沈阳国际软件园(产业园)", "city": "沈阳市", "lon": 123.465035, "lat": 41.677284, "asset_type": "产业园"}, {"name": "国泰海通城投宽庭保租房", "full_name": "国泰海通城投宽庭保租房(保租房)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "保租房"}, {"name": "易方达深高速", "full_name": "易方达深高速(交通设施)", "city": "益阳市", "lon": 112.355129, "lat": 28.554349, "asset_type": "交通设施"}, {"name": "平安宁波交投", "full_name": "平安宁波交投(交通设施)", "city": "宁波市", "lon": 121.622485, "lat": 29.859971, "asset_type": "交通设施"}, {"name": "创金合信首农", "full_name": "创金合信首农(产业园)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "产业园"}, {"name": "华安外高桥", "full_name": "华安外高桥(物流仓储)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "物流仓储"}, {"name": "汇添富上海地产租赁住房", "full_name": "汇添富上海地产租赁住房(保租房)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "保租房"}, {"name": "中金普洛斯", "full_name": "中金普洛斯(物流仓储)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "物流仓储"}, {"name": "中金普洛斯", "full_name": "中金普洛斯(物流仓储)", "city": "广州市", "lon": 113.264385, "lat": 23.12911, "asset_type": "物流仓储"}, {"name": "中金普洛斯", "full_name": "中金普洛斯(物流仓储)", "city": "重庆市", "lon": 106.551643, "lat": 29.562849, "asset_type": "物流仓储"}, {"name": "中金普洛斯", "full_name": "中金普洛斯(物流仓储)", "city": "苏州市", "lon": 120.585728, "lat": 31.2974, "asset_type": "物流仓储"}, {"name": "中金普洛斯", "full_name": "中金普洛斯(物流仓储)", "city": "江门市", "lon": 113.081542, "lat": 22.57899, "asset_type": "物流仓储"}, {"name": "中金普洛斯", "full_name": "中金普洛斯(物流仓储)", "city": "青岛市", "lon": 120.382621, "lat": 36.067131, "asset_type": "物流仓储"}, {"name": "中金普洛斯", "full_name": "中金普洛斯(物流仓储)", "city": "佛山市", "lon": 113.121435, "lat": 23.021478, "asset_type": "物流仓储"}, {"name": "中金厦门安居", "full_name": "中金厦门安居(保租房)", "city": "厦门市", "lon": 118.089204, "lat": 24.479664, "asset_type": "保租房"}, {"name": "南方万国数据中心", "full_name": "南方万国数据中心(数据中心)", "city": "苏州市", "lon": 120.585728, "lat": 31.2974, "asset_type": "数据中心"}, {"name": "华泰江苏交控", "full_name": "华泰江苏交控(交通设施)", "city": "苏州市", "lon": 120.585728, "lat": 31.2974, "asset_type": "交通设施"}, {"name": "华夏北京保障房", "full_name": "华夏北京保障房(保租房)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "保租房"}, {"name": "华夏南京交通高速公路", "full_name": "华夏南京交通高速公路(交通设施)", "city": "南京市", "lon": 118.796682, "lat": 32.05957, "asset_type": "交通设施"}, {"name": "华夏基金华润有巢", "full_name": "华夏基金华润有巢(保租房)", "city": "上海市", "lon": 121.473662, "lat": 31.230372, "asset_type": "保租房"}, {"name": "中航易商仓储物流", "full_name": "中航易商仓储物流(物流仓储)", "city": "苏州市", "lon": 120.585728, "lat": 31.2974, "asset_type": "物流仓储"}, {"name": "中金亦庄产业园", "full_name": "中金亦庄产业园(产业园)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "产业园"}, {"name": "中金唯品会奥莱", "full_name": "中金唯品会奥莱(消费商业)", "city": "宁波市", "lon": 121.622485, "lat": 29.859971, "asset_type": "消费商业"}, {"name": "汇添富九州通医药", "full_name": "汇添富九州通医药(物流仓储)", "city": "武汉市", "lon": 114.305469, "lat": 30.593175, "asset_type": "物流仓储"}, {"name": "华泰苏州恒泰租赁住房", "full_name": "华泰苏州恒泰租赁住房(保租房)", "city": "苏州市", "lon": 120.585728, "lat": 31.2974, "asset_type": "保租房"}, {"name": "工银河北高速", "full_name": "工银河北高速(交通设施)", "city": "保定市", "lon": 115.464589, "lat": 38.874434, "asset_type": "交通设施"}, {"name": "国泰海通济南能源供热", "full_name": "国泰海通济南能源供热(市政公用)", "city": "济南市", "lon": 117.120098, "lat": 36.6512, "asset_type": "市政公用"}, {"name": "国泰海通东久新经济", "full_name": "国泰海通东久新经济(产业园)", "city": "南通市", "lon": 120.894676, "lat": 31.981143, "asset_type": "产业园"}, {"name": "国泰海通东久新经济", "full_name": "国泰海通东久新经济(产业园)", "city": "常州市", "lon": 119.974061, "lat": 31.811226, "asset_type": "产业园"}, {"name": "国泰海通东久新经济", "full_name": "国泰海通东久新经济(产业园)", "city": "无锡市", "lon": 120.31191, "lat": 31.491169, "asset_type": "产业园"}, {"name": "国泰海通东久新经济", "full_name": "国泰海通东久新经济(产业园)", "city": "苏州市", "lon": 119.425836, "lat": 32.187849, "asset_type": "产业园"}, {"name": "国泰海通东久新经济", "full_name": "国泰海通东久新经济(产业园)", "city": "重庆市", "lon": 121.473662, "lat": 31.230372, "asset_type": "产业园"}, {"name": "国泰海通东久新经济", "full_name": "国泰海通东久新经济(产业园)", "city": "上海市", "lon": 120.585728, "lat": 31.2974, "asset_type": "产业园"}, {"name": "华夏特变电工新能源", "full_name": "华夏特变电工新能源(能源)", "city": "哈密市", "lon": 93.515224, "lat": 42.819541, "asset_type": "能源"}, {"name": "中银中外运仓储物流", "full_name": "中银中外运仓储物流(物流仓储)", "city": "天津市", "lon": 117.200983, "lat": 39.084158, "asset_type": "物流仓储"}, {"name": "中银中外运仓储物流", "full_name": "中银中外运仓储物流(物流仓储)", "city": "成都市", "lon": 104.066794, "lat": 30.572893, "asset_type": "物流仓储"}, {"name": "中银中外运仓储物流", "full_name": "中银中外运仓储物流(物流仓储)", "city": "苏州市", "lon": 120.585728, "lat": 31.2974, "asset_type": "物流仓储"}, {"name": "中银中外运仓储物流", "full_name": "中银中外运仓储物流(物流仓储)", "city": "无锡市", "lon": 120.31191, "lat": 31.491169, "asset_type": "物流仓储"}, {"name": "中银中外运仓储物流", "full_name": "中银中外运仓储物流(物流仓储)", "city": "金华市", "lon": 119.647229, "lat": 29.079208, "asset_type": "物流仓储"}, {"name": "华夏凯德商业", "full_name": "华夏凯德商业(消费商业)", "city": "广州市", "lon": 113.264385, "lat": 23.12911, "asset_type": "消费商业"}, {"name": "华夏凯德商业", "full_name": "华夏凯德商业(消费商业)", "city": "长沙市", "lon": 112.938884, "lat": 28.22808, "asset_type": "消费商业"}, {"name": "华夏金隅智造工场", "full_name": "华夏金隅智造工场(产业园)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "产业园"}, {"name": "中航京能光伏", "full_name": "中航京能光伏(能源)", "city": "榆林市", "lon": 109.734474, "lat": 38.285369, "asset_type": "能源"}, {"name": "中航京能光伏", "full_name": "中航京能光伏(能源)", "city": "随州市", "lon": 113.382515, "lat": 31.690191, "asset_type": "能源"}, {"name": "中航京能光伏", "full_name": "中航京能光伏(能源)", "city": "保山市", "lon": 99.161761, "lat": 25.112046, "asset_type": "能源"}, {"name": "华泰南京建邺", "full_name": "华泰南京建邺(产业园)", "city": "南京市", "lon": 118.796682, "lat": 32.05957, "asset_type": "产业园"}, {"name": "嘉实京东仓储基础设施", "full_name": "嘉实京东仓储基础设施(物流仓储)", "city": "廊坊市", "lon": 116.683752, "lat": 39.538047, "asset_type": "物流仓储"}, {"name": "嘉实京东仓储基础设施", "full_name": "嘉实京东仓储基础设施(物流仓储)", "city": "武汉市", "lon": 114.305469, "lat": 30.593175, "asset_type": "物流仓储"}, {"name": "嘉实京东仓储基础设施", "full_name": "嘉实京东仓储基础设施(物流仓储)", "city": "重庆市", "lon": 106.551643, "lat": 29.562849, "asset_type": "物流仓储"}, {"name": "建信中关村", "full_name": "建信中关村(产业园)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "产业园"}, {"name": "博时蛇口产园", "full_name": "博时蛇口产园(产业园)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "产业园"}, {"name": "华夏合肥高新", "full_name": "华夏合肥高新(产业园)", "city": "合肥市", "lon": 117.227219, "lat": 31.820591, "asset_type": "产业园"}, {"name": "华夏和达高科", "full_name": "华夏和达高科(产业园)", "city": "杭州市", "lon": 120.209789, "lat": 30.24692, "asset_type": "产业园"}, {"name": "易方达广开产园", "full_name": "易方达广开产园(产业园)", "city": "广州市", "lon": 113.264385, "lat": 23.12911, "asset_type": "产业园"}, {"name": "广发成都高投产业园", "full_name": "广发成都高投产业园(产业园)", "city": "成都市", "lon": 104.066794, "lat": 30.572893, "asset_type": "产业园"}, {"name": "平安广州广河", "full_name": "平安广州广河(交通设施)", "city": "广州市", "lon": 113.264385, "lat": 23.12911, "asset_type": "交通设施"}, {"name": "华夏越秀高速", "full_name": "华夏越秀高速(交通设施)", "city": "武汉市", "lon": 114.305469, "lat": 30.593175, "asset_type": "交通设施"}, {"name": "华夏越秀高速", "full_name": "华夏越秀高速(交通设施)", "city": "孝感市", "lon": 113.957037, "lat": 30.917766, "asset_type": "交通设施"}, {"name": "招商高速公路", "full_name": "招商高速公路(交通设施)", "city": "亳州市", "lon": 115.77867, "lat": 33.844592, "asset_type": "交通设施"}, {"name": "红土创新盐田港", "full_name": "红土创新盐田港(物流仓储)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "物流仓储"}, {"name": "华夏深国际", "full_name": "华夏深国际(物流仓储)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "物流仓储"}, {"name": "华夏深国际", "full_name": "华夏深国际(物流仓储)", "city": "黔南布依族苗族自治州", "lon": 107.522171, "lat": 26.253275, "asset_type": "物流仓储"}, {"name": "华泰宝湾物流", "full_name": "华泰宝湾物流(物流仓储)", "city": "南京市", "lon": 118.796682, "lat": 32.05957, "asset_type": "物流仓储"}, {"name": "华泰宝湾物流", "full_name": "华泰宝湾物流(物流仓储)", "city": "嘉兴市", "lon": 120.75547, "lat": 30.746191, "asset_type": "物流仓储"}, {"name": "华泰宝湾物流", "full_name": "华泰宝湾物流(物流仓储)", "city": "天津市", "lon": 117.200983, "lat": 39.084158, "asset_type": "物流仓储"}, {"name": "南方顺丰物流", "full_name": "南方顺丰物流(物流仓储)", "city": "合肥市", "lon": 117.227219, "lat": 31.820591, "asset_type": "物流仓储"}, {"name": "南方顺丰物流", "full_name": "南方顺丰物流(物流仓储)", "city": "武汉市", "lon": 114.305469, "lat": 30.593175, "asset_type": "物流仓储"}, {"name": "南方顺丰物流", "full_name": "南方顺丰物流(物流仓储)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "物流仓储"}, {"name": "华夏安博仓储", "full_name": "华夏安博仓储(物流仓储)", "city": "东莞市", "lon": 113.751799, "lat": 23.020673, "asset_type": "物流仓储"}, {"name": "华夏安博仓储", "full_name": "华夏安博仓储(物流仓储)", "city": "广州市", "lon": 113.264385, "lat": 23.12911, "asset_type": "物流仓储"}, {"name": "鹏华深圳能源", "full_name": "鹏华深圳能源(能源)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "能源"}, {"name": "工银蒙能清洁能源", "full_name": "工银蒙能清洁能源(能源)", "city": "乌兰察布市", "lon": 113.132584, "lat": 40.994785, "asset_type": "能源"}, {"name": "工银蒙能清洁能源", "full_name": "工银蒙能清洁能源(能源)", "city": "包头市", "lon": 109.953504, "lat": 40.621157, "asset_type": "能源"}, {"name": "红土创新深圳安居", "full_name": "红土创新深圳安居(保租房)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "保租房"}, {"name": "招商基金蛇口租赁住房", "full_name": "招商基金蛇口租赁住房(保租房)", "city": "深圳市", "lon": 114.057939, "lat": 22.543527, "asset_type": "保租房"}, {"name": "华夏华润商业", "full_name": "华夏华润商业(消费商业)", "city": "青岛市", "lon": 120.382621, "lat": 36.067131, "asset_type": "消费商业"}, {"name": "中金印力消费", "full_name": "中金印力消费(消费商业)", "city": "杭州市", "lon": 120.209789, "lat": 30.24692, "asset_type": "消费商业"}, {"name": "华夏大悦城商业", "full_name": "华夏大悦城商业(消费商业)", "city": "成都市", "lon": 104.066794, "lat": 30.572893, "asset_type": "消费商业"}, {"name": "易方达华威市场", "full_name": "易方达华威市场(消费商业)", "city": "福州市", "lon": 119.296389, "lat": 26.074268, "asset_type": "消费商业"}, {"name": "中金中国绿发商业", "full_name": "中金中国绿发商业(消费商业)", "city": "济南市", "lon": 117.120098, "lat": 36.6512, "asset_type": "消费商业"}, {"name": "华夏中海商业", "full_name": "华夏中海商业(消费商业)", "city": "佛山市", "lon": 113.121435, "lat": 23.021478, "asset_type": "消费商业"}, {"name": "银华绍兴原水水利", "full_name": "银华绍兴原水水利(水利)", "city": "绍兴市", "lon": 120.580364, "lat": 30.030192, "asset_type": "水利"}, {"name": "中航首钢绿能", "full_name": "中航首钢绿能(生态环保)", "city": "北京市", "lon": 116.407394, "lat": 39.904211, "asset_type": "生态环保"}, {"name": "南方润泽科技数据中心", "full_name": "南方润泽科技数据中心(数据中心)", "city": "廊坊市", "lon": 116.683752, "lat": 39.538047, "asset_type": "数据中心"}, {"name": "华夏中核清洁能源", "full_name": "华夏中核清洁能源(能源)", "city": "和田市", "lon": 79.913534, "lat": 37.112148, "asset_type": "能源"}];
+var allCoords = {"上海市": [121.473662, 31.230372], "浙江省": [120.152585, 30.266597], "北京市": [116.407394, 39.904211], "湖北省": [114.341745, 30.546557], "山东省": [117.019915, 36.671156], "安徽省": [117.329949, 31.733806], "广东省": [113.26641, 23.132324], "重庆市": [106.551643, 29.562849], "内蒙古自治区": [111.76629, 40.81739], "河北省": [114.530235, 38.037433], "湖南省": [112.9836, 28.112743], "天津市": [117.200983, 39.084158], "四川省": [104.075809, 30.651239], "江苏省": [118.762765, 32.060875], "辽宁省": [123.431382, 41.836175], "福建省": [119.295143, 26.100779], "新疆维吾尔自治区": [87.627704, 43.793026], "陕西省": [108.954347, 34.265502], "云南省": [102.710002, 25.045806], "贵州省": [106.70546, 26.600055], "杭州市": [120.209789, 30.24692], "武汉市": [114.305469, 30.593175], "济南市": [117.120098, 36.6512], "合肥市": [117.227219, 31.820591], "深圳市": [114.057939, 22.543527], "菏泽市": [115.480656, 35.23375], "芜湖市": [118.432941, 31.352859], "赤峰市": [118.88694, 42.257843], "沧州市": [116.838834, 38.304477], "长沙市": [112.938884, 28.22808], "咸宁市": [114.322616, 29.841362], "甘孜藏族自治州": [101.96231, 30.04952], "苏州市": [120.585728, 31.2974], "盐城市": [120.163107, 33.347708], "沈阳市": [123.465035, 41.677284], "益阳市": [112.355129, 28.554349], "宁波市": [121.622485, 29.859971], "广州市": [113.264385, 23.12911], "江门市": [113.081542, 22.57899], "青岛市": [120.382621, 36.067131], "佛山市": [113.121435, 23.021478], "厦门市": [118.089204, 24.479664], "南京市": [118.796682, 32.05957], "保定市": [115.464589, 38.874434], "南通市": [120.894676, 31.981143], "常州市": [119.974061, 31.811226], "无锡市": [120.31191, 31.491169], "哈密市": [93.515224, 42.819541], "成都市": [104.066794, 30.572893], "金华市": [119.647229, 29.079208], "榆林市": [109.734474, 38.285369], "随州市": [113.382515, 31.690191], "保山市": [99.161761, 25.112046], "廊坊市": [116.683752, 39.538047], "孝感市": [113.957037, 30.917766], "亳州市": [115.77867, 33.844592], "黔南布依族苗族自治州": [107.522171, 26.253275], "嘉兴市": [120.75547, 30.746191], "东莞市": [113.751799, 23.020673], "乌兰察布市": [113.132584, 40.994785], "包头市": [109.953504, 40.621157], "福州市": [119.296389, 26.074268], "绍兴市": [120.580364, 30.030192], "和田市": [79.913534, 37.112148]};
+var visualMapColors = ["#4575b4", "#3C9BC9", "#74add1", "#95CBC9", "#ADC9AB", "#E2C89A", "#FBC08A", "#FAA26F", "#F97F5F", "#F46d43", "#d73027"];
+var assetHierarchy = [{"asset_type": "产业园", "reits": [{"reit": "国泰海通东久新经济", "cities": [{"city": "南通市", "assets": ["东久 (南通) 智造园"], "asset_count": 1}, {"city": "常州市", "assets": ["东久 (常州) 智造园"], "asset_count": 1}, {"city": "无锡市", "assets": ["东久 (无锡) 智造园"], "asset_count": 1}, {"city": "苏州市", "assets": ["东久 (昆山) 智造园"], "asset_count": 1}, {"city": "重庆市", "assets": ["东久 (重庆) 智造园一期"], "asset_count": 1}, {"city": "上海市", "assets": ["东久 (金山) 智造园"], "asset_count": 1}], "city_count": 6}, {"reit": "华安张江产业园", "cities": [{"city": "上海市", "assets": ["国家 FRID 产业化基地项目", "张润大厦项目", "盛夏中京科技园"], "asset_count": 3}], "city_count": 1}, {"reit": "中金联东科创", "cities": [{"city": "北京市", "assets": ["北京大兴科创产业园", "北京房山奥得赛产业园", "北京马坡科技园一期"], "asset_count": 3}], "city_count": 1}, {"reit": "中金重庆两江", "cities": [{"city": "重庆市", "assets": ["凤凰座项目", "双子座项目", "双鱼座项目", "拓 D 一期 D2 项目"], "asset_count": 4}], "city_count": 1}, {"reit": "招商科创", "cities": [{"city": "上海市", "assets": ["国定路 1 号楼", "国定路 3 号楼", "湾谷园 B5 号楼"], "asset_count": 3}], "city_count": 1}, {"reit": "中金湖北科投光谷", "cities": [{"city": "武汉市", "assets": ["互联网 + 项目", "光谷软件园 A1-A7 栋", "光谷软件园 C6 栋", "光谷软件园 E3 栋"], "asset_count": 4}], "city_count": 1}, {"reit": "国泰海通临港创新产业园", "cities": [{"city": "上海市", "assets": ["临港奉贤智造园一期项目", "临港奉贤智造园三期项目", "康桥项目"], "asset_count": 3}], "city_count": 1}, {"reit": "博时津开产园", "cities": [{"city": "天津市", "assets": ["大陆汽车厂房产业园", "天河数字产业园"], "asset_count": 2}], "city_count": 1}, {"reit": "东吴苏园产业", "cities": [{"city": "苏州市", "assets": ["2.5 产业园一期、二期项目", "国际科技园五期 B 区"], "asset_count": 2}], "city_count": 1}, {"reit": "中信建投沈阳国际软件园", "cities": [{"city": "沈阳市", "assets": ["昂立信息园 A、B 座项目", "软件园 B、F 区项目", "软件园 D、E 区项目"], "asset_count": 3}], "city_count": 1}, {"reit": "创金合信首农", "cities": [{"city": "北京市", "assets": ["中关村移动智能服务创新园 (首农元中心)"], "asset_count": 1}], "city_count": 1}, {"reit": "中金亦庄产业园", "cities": [{"city": "北京市", "assets": ["N12 项目", "N20 项目"], "asset_count": 2}], "city_count": 1}, {"reit": "华夏金隅智造工场", "cities": [{"city": "北京市", "assets": ["金隅智造工场产权一期项目"], "asset_count": 1}], "city_count": 1}, {"reit": "华泰南京建邺", "cities": [{"city": "南京市", "assets": ["国际研发总部园"], "asset_count": 1}], "city_count": 1}, {"reit": "建信中关村", "cities": [{"city": "北京市", "assets": ["互联网创新中心 5 号楼项目", "协同中心 4 号楼项目", "孵化加速器项目"], "asset_count": 3}], "city_count": 1}, {"reit": "博时蛇口产园", "cities": [{"city": "深圳市", "assets": ["万海大厦", "万融大厦", "光明项目"], "asset_count": 3}], "city_count": 1}, {"reit": "华夏合肥高新", "cities": [{"city": "合肥市", "assets": ["合肥高新创业园一期"], "asset_count": 1}], "city_count": 1}, {"reit": "华夏和达高科", "cities": [{"city": "杭州市", "assets": ["和达药谷一期项目", "孵化器项目"], "asset_count": 2}], "city_count": 1}, {"reit": "易方达广开产园", "cities": [{"city": "广州市", "assets": ["创意大厦园区", "创新基地", "创新大厦园区"], "asset_count": 3}], "city_count": 1}, {"reit": "广发成都高投产业园", "cities": [{"city": "成都市", "assets": ["天府软件园一期项目", "盈创动力大厦"], "asset_count": 2}], "city_count": 1}], "total_cities": 25, "reits_count": 20}, {"asset_type": "交通设施", "reits": [{"reit": "华夏越秀高速", "cities": [{"city": "武汉市", "assets": ["机场北连接线"], "asset_count": 1}, {"city": "孝感市", "assets": ["汉孝高速公路主线路"], "asset_count": 1}], "city_count": 2}, {"reit": "浙商沪杭甬", "cities": [{"city": "杭州市", "assets": ["杭徽高速公路 (浙江段) 昌昱段", "杭徽高速公路 (浙江段) 汪昌段", "杭徽高速公路 (浙江段) 留汪段"], "asset_count": 3}], "city_count": 1}, {"reit": "中金山东高速", "cities": [{"city": "菏泽市", "assets": ["鄄菏高速公路项目"], "asset_count": 1}], "city_count": 1}, {"reit": "国金中国铁建", "cities": [{"city": "重庆市", "assets": ["渝遂高速 (重庆段) 项目"], "asset_count": 1}], "city_count": 1}, {"reit": "中金安徽交控", "cities": [{"city": "芜湖市", "assets": ["沿江高速公路芜湖 (张韩) 至安庆 (大渡口) 段"], "asset_count": 1}], "city_count": 1}, {"reit": "华夏中国交建", "cities": [{"city": "咸宁市", "assets": ["武汉至深圳高速公路嘉鱼至通城段及其附属设施"], "asset_count": 1}], "city_count": 1}, {"reit": "易方达深高速", "cities": [{"city": "益阳市", "assets": ["益常高速公路项目"], "asset_count": 1}], "city_count": 1}, {"reit": "平安宁波交投", "cities": [{"city": "宁波市", "assets": ["杭州湾跨海大桥"], "asset_count": 1}], "city_count": 1}, {"reit": "华泰江苏交控", "cities": [{"city": "苏州市", "assets": ["沪苏浙高速公路"], "asset_count": 1}], "city_count": 1}, {"reit": "华夏南京交通高速公路", "cities": [{"city": "南京市", "assets": ["南京绕越高速公路东南段"], "asset_count": 1}], "city_count": 1}, {"reit": "工银河北高速", "cities": [{"city": "保定市", "assets": ["荣乌高速公路 (大王店枢纽互通至冀晋界段) 项目"], "asset_count": 1}], "city_count": 1}, {"reit": "平安广州广河", "cities": [{"city": "广州市", "assets": ["广州至河源高速公路广州段项目"], "asset_count": 1}], "city_count": 1}, {"reit": "招商高速公路", "cities": [{"city": "亳州市", "assets": ["安徽亳阜高速公路项目"], "asset_count": 1}], "city_count": 1}], "total_cities": 14, "reits_count": 13}, {"asset_type": "消费商业", "reits": [{"reit": "华夏首创奥莱", "cities": [{"city": "武汉市", "assets": ["武汉首创奥莱项目"], "asset_count": 1}, {"city": "济南市", "assets": ["济南首创奥莱项目"], "asset_count": 1}], "city_count": 2}, {"reit": "华夏凯德商业", "cities": [{"city": "广州市", "assets": ["广州云尚项目"], "asset_count": 1}, {"city": "长沙市", "assets": ["长沙雨花亭项目"], "asset_count": 1}], "city_count": 2}, {"reit": "华安百联消费", "cities": [{"city": "上海市", "assets": ["上海又一城购物中心"], "asset_count": 1}], "city_count": 1}, {"reit": "嘉实物美消费", "cities": [{"city": "北京市", "assets": ["华天项目", "大成路项目", "德胜门项目", "玉蜓桥项目"], "asset_count": 4}], "city_count": 1}, {"reit": "华夏金茂商业", "cities": [{"city": "长沙市", "assets": ["长沙览秀城"], "asset_count": 1}], "city_count": 1}, {"reit": "中金唯品会奥莱", "cities": [{"city": "宁波市", "assets": ["杉井奥特莱斯"], "asset_count": 1}], "city_count": 1}, {"reit": "华夏华润商业", "cities": [{"city": "青岛市", "assets": ["青岛万象城"], "asset_count": 1}], "city_count": 1}, {"reit": "中金印力消费", "cities": [{"city": "杭州市", "assets": ["杭州西溪印象城"], "asset_count": 1}], "city_count": 1}, {"reit": "华夏大悦城商业", "cities": [{"city": "成都市", "assets": ["成都大悦城"], "asset_count": 1}], "city_count": 1}, {"reit": "易方达华威市场", "cities": [{"city": "福州市", "assets": ["华威西营里农产品交易中心"], "asset_count": 1}], "city_count": 1}, {"reit": "中金中国绿发商业", "cities": [{"city": "济南市", "assets": ["领秀城贵和购物中心"], "asset_count": 1}], "city_count": 1}, {"reit": "华夏中海商业", "cities": [{"city": "佛山市", "assets": ["佛山映月湖环宇城"], "asset_count": 1}], "city_count": 1}], "total_cities": 14, "reits_count": 12}, {"asset_type": "物流仓储", "reits": [{"reit": "中金普洛斯", "cities": [{"city": "广州市", "assets": ["普洛斯增城物流园", "普洛斯广州保税物流园", "普洛斯江门鹤山物流园"], "asset_count": 3}, {"city": "江门市", "assets": ["普洛斯淀山湖物流园", "普洛斯通州光机电物流园"], "asset_count": 2}, {"city": "北京市", "assets": ["普洛斯北京空港物流园"], "asset_count": 1}, {"city": "重庆市", "assets": ["普洛斯 (重庆) 城市配送物流中心"], "asset_count": 1}, {"city": "苏州市", "assets": ["苏州望亭普洛斯物流园"], "asset_count": 1}, {"city": "青岛市", "assets": ["普洛斯顺德物流园"], "asset_count": 1}, {"city": "佛山市", "assets": ["普洛斯青岛前湾港国际物流园"], "asset_count": 1}], "city_count": 7}, {"reit": "中银中外运仓储物流", "cities": [{"city": "苏州市", "assets": ["昆山千灯物流项目", "瑞达昆山物流园"], "asset_count": 2}, {"city": "天津市", "assets": ["天津建合物流项目"], "asset_count": 1}, {"city": "成都市", "assets": ["成都空港物流项目"], "asset_count": 1}, {"city": "无锡市", "assets": ["瑞达无锡物流项目"], "asset_count": 1}, {"city": "金华市", "assets": ["瑞达金华物流项目"], "asset_count": 1}], "city_count": 5}, {"reit": "嘉实京东仓储基础设施", "cities": [{"city": "廊坊市", "assets": ["京东亚洲一号廊坊经开物流园"], "asset_count": 1}, {"city": "武汉市", "assets": ["京东商城亚洲 1 号仓储华中总部建设项目"], "asset_count": 1}, {"city": "重庆市", "assets": ["京东重庆电子商务基地项目 (中转配送中心) 一期"], "asset_count": 1}], "city_count": 3}, {"reit": "华泰宝湾物流", "cities": [{"city": "南京市", "assets": ["南京宝湾物流园"], "asset_count": 1}, {"city": "嘉兴市", "assets": ["嘉兴宝湾物流园"], "asset_count": 1}, {"city": "天津市", "assets": ["天津宝湾物流园"], "asset_count": 1}], "city_count": 3}, {"reit": "南方顺丰物流", "cities": [{"city": "合肥市", "assets": ["合肥项目"], "asset_count": 1}, {"city": "武汉市", "assets": ["武汉项目"], "asset_count": 1}, {"city": "深圳市", "assets": ["深圳项目"], "asset_count": 1}], "city_count": 3}, {"reit": "华夏深国际", "cities": [{"city": "深圳市", "assets": ["深国际华东智慧城一期项目"], "asset_count": 1}, {"city": "黔南布依族苗族自治州", "assets": ["深国际贵州综合物流港项目"], "asset_count": 1}], "city_count": 2}, {"reit": "华夏安博仓储", "cities": [{"city": "东莞市", "assets": ["东莞洪梅项目", "东莞石排项目"], "asset_count": 2}, {"city": "广州市", "assets": ["广州开发区项目"], "asset_count": 1}], "city_count": 2}, {"reit": "华安外高桥", "cities": [{"city": "上海市", "assets": ["W3-3 地块 8# 仓库", "W4-3 地块 14# 仓库", "W5-2 地块 1# 仓库", "W5-5 地块 12#、13# 仓库"], "asset_count": 4}], "city_count": 1}, {"reit": "中航易商仓储物流", "cities": [{"city": "苏州市", "assets": ["富莱德昆山物流园"], "asset_count": 1}], "city_count": 1}, {"reit": "汇添富九州通医药", "cities": [{"city": "武汉市", "assets": ["武汉东西湖项目"], "asset_count": 1}], "city_count": 1}, {"reit": "红土创新盐田港", "cities": [{"city": "深圳市", "assets": ["世纪物流园项目", "现代物流中心项目"], "asset_count": 2}], "city_count": 1}], "total_cities": 29, "reits_count": 11}, {"asset_type": "能源", "reits": [{"reit": "中航京能光伏", "cities": [{"city": "榆林市", "assets": ["松山河口水电站项目", "榆林市榆阳区 300MWp 光伏发电项目"], "asset_count": 2}, {"city": "随州市", "assets": ["湖北随州 100MWp 光伏发电项目"], "asset_count": 1}, {"city": "保山市", "assets": ["苏家河口水电站项目"], "asset_count": 1}], "city_count": 3}, {"reit": "中信建投明阳智能新能源", "cities": [{"city": "赤峰市", "assets": ["克什克腾旗红土井子风电场 50MW 项目"], "asset_count": 1}, {"city": "沧州市", "assets": ["黄骅旧城风电场 100MW 风电项目"], "asset_count": 1}], "city_count": 2}, {"reit": "工银蒙能清洁能源", "cities": [{"city": "乌兰察布市", "assets": ["华晨风电项目"], "asset_count": 1}, {"city": "包头市", "assets": ["恒润一期风电项目"], "asset_count": 1}], "city_count": 2}, {"reit": "华夏华电清洁能源", "cities": [{"city": "杭州市", "assets": ["杭州华电江东天然气热电联产项目"], "asset_count": 1}], "city_count": 1}, {"reit": "嘉实中国电建清洁能源", "cities": [{"city": "甘孜藏族自治州", "assets": ["五一桥水电站项目"], "asset_count": 1}], "city_count": 1}, {"reit": "中信建投国家电投新能源", "cities": [{"city": "盐城市", "assets": ["中电投滨海北区 H1#100MW 海上风电工程", "中电投滨海北区 H2#400MW 海上风电工程", "国家电投集团滨海北 H1# 海上风电运维驿站工程项目"], "asset_count": 3}], "city_count": 1}, {"reit": "华夏特变电工新能源", "cities": [{"city": "哈密市", "assets": ["哈密东南部山口光伏园区 150MWp 光伏发电项目"], "asset_count": 1}], "city_count": 1}, {"reit": "鹏华深圳能源", "cities": [{"city": "深圳市", "assets": ["深圳能源东部电厂 (一期)"], "asset_count": 1}], "city_count": 1}, {"reit": "华夏中核清洁能源", "cities": [{"city": "和田市", "assets": ["（波波娜水电站）"], "asset_count": 1}], "city_count": 1}], "total_cities": 13, "reits_count": 9}, {"asset_type": "保租房", "reits": [{"reit": "国泰海通城投宽庭保租房", "cities": [{"city": "上海市", "assets": ["光华社区项目", "江湾社区项目"], "asset_count": 2}], "city_count": 1}, {"reit": "汇添富上海地产租赁住房", "cities": [{"city": "上海市", "assets": ["江月路项目", "虹桥项目"], "asset_count": 2}], "city_count": 1}, {"reit": "中金厦门安居", "cities": [{"city": "厦门市", "assets": ["园博公寓", "珩琦公寓"], "asset_count": 2}], "city_count": 1}, {"reit": "华夏北京保障房", "cities": [{"city": "北京市", "assets": ["光机电项目", "文龙家园项目", "朗悦嘉园项目", "温泉凯盛家园项目", "熙悦尚郡项目", "盛悦家园项目"], "asset_count": 6}], "city_count": 1}, {"reit": "华夏基金华润有巢", "cities": [{"city": "上海市", "assets": ["有巢东部经开区项目", "有巢泗泾项目", "有巢马桥项目"], "asset_count": 3}], "city_count": 1}, {"reit": "华泰苏州恒泰租赁住房", "cities": [{"city": "苏州市", "assets": ["菁英公寓项目"], "asset_count": 1}], "city_count": 1}, {"reit": "红土创新深圳安居", "cities": [{"city": "深圳市", "assets": ["保利香槟苑", "凤凰公馆", "安居百泉阁", "安居锦园"], "asset_count": 4}], "city_count": 1}, {"reit": "招商基金蛇口租赁住房", "cities": [{"city": "深圳市", "assets": ["太子湾人才公寓一期 (太子湾项目)", "招商桃花园五期 (林下项目)"], "asset_count": 2}], "city_count": 1}], "total_cities": 8, "reits_count": 8}, {"asset_type": "生态环保", "reits": [{"reit": "富国首创水务", "cities": [{"city": "深圳市", "assets": ["深圳市光明区玉塘街道玉律社区公明水厂", "深圳市宝安区燕罗街道办洋涌河南岸燕川大桥与洋涌闸之间松岗水厂", "深圳市宝安区福海街道办新和村福永水厂"], "asset_count": 3}, {"city": "合肥市", "assets": ["合肥市十五里河污水处理厂 PPP 项目"], "asset_count": 1}], "city_count": 2}, {"reit": "中航首钢绿能", "cities": [{"city": "北京市", "assets": ["北京首钢生物质能源项目", "北京首钢餐厨垃圾收运处一体化项目 (一期)", "北京首钢鲁家山残渣暂存场项目"], "asset_count": 3}], "city_count": 1}], "total_cities": 3, "reits_count": 2}, {"asset_type": "数据中心", "reits": [{"reit": "南方万国数据中心", "cities": [{"city": "苏州市", "assets": ["国金数据中心"], "asset_count": 1}], "city_count": 1}, {"reit": "南方润泽科技数据中心", "cities": [{"city": "廊坊市", "assets": ["润泽 (廊坊) 国际信息港 A-18 数据中心"], "asset_count": 1}], "city_count": 1}], "total_cities": 2, "reits_count": 2}, {"asset_type": "市政公用", "reits": [{"reit": "国泰海通济南能源供热", "cities": [{"city": "济南市", "assets": ["长输管网项目"], "asset_count": 1}], "city_count": 1}], "total_cities": 1, "reits_count": 1}, {"asset_type": "水利", "reits": [{"reit": "银华绍兴原水水利", "cities": [{"city": "绍兴市", "assets": ["绍兴市汤浦水库工程"], "asset_count": 1}], "city_count": 1}], "total_cities": 1, "reits_count": 1}];
+var maxProvinceCount = 14;
+var maxCityCount = 9;
+var currentZoom = 1.5;
+var isProvinceView = true;
+
+function getChartInstance() {
+    var divs = document.getElementsByTagName('div');
+    for (var i=0; i<divs.length; i++) {
+        var ins = echarts.getInstanceByDom(divs[i]);
+        if (ins) return ins;
+    }
+    return null;
+}
+
+function updateMapData(zoom) {
+    var chart = getChartInstance();
+    if (!chart) return;
+    
+    var shouldShowCity = zoom >= 3.5;
+    
+    if (shouldShowCity !== isProvinceView) {
+        return;
+    }
+    
+    isProvinceView = !shouldShowCity;
+    var dataToShow = isProvinceView ? provinceData : cityData;
+    var seriesName = isProvinceView ? "省份REITs分布" : "城市REITs分布";
+    var maxCount = isProvinceView ? maxProvinceCount : maxCityCount;
+    
+    var formatterJs;
+    if (isProvinceView) {
+        formatterJs = function(params) {
+            for (var i=0; i<provinceData.length; i++) {
+                if (provinceData[i].name === params.name) {
+                    return provinceData[i].value[3];
+                }
+            }
+            return params.name;
+        };
+    } else {
+        formatterJs = function(params) {
+            for (var i=0; i<cityData.length; i++) {
+                if (cityData[i].name === params.name) {
+                    return cityData[i].value[3];
+                }
+            }
+            return params.name;
+        };
+    }
+    
+    var currentOption = chart.getOption();
+    var currentCenter = currentOption.geo[0].center;
+    var currentZoom = currentOption.geo[0].zoom;
+    
+    var pieces = [];
+    for (var i = 1; i <= Math.min(10, maxCount); i++) {
+        pieces.push({min: i, max: i, label: String(i)});
+    }
+    if (maxCount > 10) {
+        pieces.push({min: 11, max: maxCount, label: "11+"});
+    }
+    
+    setTimeout(function() {
+        chart.clear();
+        
+        chart.setOption({
+            geo: [{
+                type: 'map',
+                map: 'china',
+                roam: true,
+                center: currentCenter,
+                zoom: currentZoom,
+                itemStyle: {
+                    areaColor: '#d0e1f9',
+                    borderColor: '#ffffff'
+                },
+                emphasis: {
+                    itemStyle: {
+                        areaColor: '#b8d4f1'
+                    }
+                }
+            }],
+            series: [{
+                name: seriesName,
+                type: 'effectScatter',
+                coordinateSystem: 'geo',
+                data: dataToShow.map(x => {
+                    return {
+                        name: x.name,
+                        value: [x.value[0], x.value[1], x.value[2]]
+                    };
+                }),
+                symbolSize: 12,
+                showEffectOn: 'render',
+                rippleEffect: {
+                    brushType: 'stroke'
+                },
+                label: {
+                    show: true,
+                    formatter: '{b}',
+                    position: 'right',
+                    fontSize: 12
+                },
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowColor: 'rgba(0, 0, 0, 0.3)'
+                }
+            }],
+            tooltip: {
+                trigger: 'item',
+                formatter: formatterJs
+            },
+            visualMap: {
+                min: 1,
+                max: maxCount,
+                left: 10,
+                bottom: 10,
+                calculable: false,
+                piecewise: true,
+                pieces: pieces,
+                inRange: {
+                    color: visualMapColors
+                },
+                textStyle: {
+                    fontSize: 12
+                }
+            },
+            graphic: [{
+                type: 'group',
+                left: 'center',
+                bottom: 5,
+                children: [{
+                    type: 'text',
+                    left: 'center',
+                    bottom: 5,
+                    style: {
+                        text: '数据来源: Wind, iFind | 原创制作: Qimai | 制作日期: 2026-02',
+                        font: '12px Arial',
+                        fill: '#666666'
+                    }
+                }]
+            }]
+        });
+    }, 50);
+    
+    document.getElementById('zoom-indicator').innerHTML = isProvinceView ? 
+        '📍 当前:省份视图' : '🏙️ 当前:城市视图';
+}
+
+function navigateTo(lon, lat, zoom) {
+    var chart = getChartInstance();
+    if (chart) {
+        chart.setOption({ 
+            geo: [{ 
+                center: [lon, lat], 
+                zoom: zoom 
+            }] 
+        });
+        currentZoom = zoom;
+        updateMapData(zoom);
+    }
+}
+
+function renderStats() {
+    var container = document.getElementById('stats-content');
+    container.innerHTML = '';
+    
+    // 遍历已排序的数据结构
+    assetHierarchy.forEach(assetTypeData => {
+        var assetType = assetTypeData.asset_type;
+        var reits = assetTypeData.reits;
+        var reitsCount = assetTypeData.reits_count;
+        
+        // 计算总资产数
+        var totalAssets = 0;
+        reits.forEach(reit => {
+            reit.cities.forEach(cityData => {
+                totalAssets += cityData.asset_count;
+            });
+        });
+        
+        var level1Html = `
+            <div class="stats-item">
+                <div class="level-1-header" onclick="toggleNext(this)">
+                    <span>${assetType}</span>
+                    <span style="color:#3498db">${reitsCount}只 | ${totalAssets}项资产 ▾</span>
+                </div>
+                <div class="level-2-container">`;
+        
+        // 第2层: REITs (已按城市数排序)
+        reits.forEach(reitData => {
+            var reit = reitData.reit;
+            var cities = reitData.cities;
+            var cityCount = reitData.city_count;
+            
+            var reitsAssetCount = 0;
+            cities.forEach(cityData => {
+                reitsAssetCount += cityData.asset_count;
+            });
+            
+            level1Html += `
+                <div class="level-2-item">
+                    <div class="level-2-header" onclick="toggleNext(this)">
+                        <span>📊 ${reit}</span>
+                        <span style="color:#27ae60; font-size:10px">${cityCount}城 | ${reitsAssetCount}资产 ▾</span>
+                    </div>
+                    <div class="level-3-detail">`;
+            
+            // 第3层: 城市+底层资产 (已按资产数排序)
+            cities.forEach(cityData => {
+                var city = cityData.city;
+                var assets = cityData.assets;
+                
+                level1Html += `<div class="city-section">`;
+                level1Html += `<div class="city-name">📍 ${city} (${assets.length}项)</div>`;
+                
+                if (assets.length > 0) {
+                    assets.forEach(asset => {
+                        level1Html += `<div class="asset-item">• ${asset}</div>`;
+                    });
+                } else {
+                    level1Html += `<div class="asset-item" style="color:#bdc3c7">暂无具体资产信息</div>`;
+                }
+                
+                level1Html += `</div>`;
+            });
+            
+            level1Html += `
+                    </div>
+                </div>`;
+        });
+        
+        level1Html += `
+                </div>
+            </div>`;
+        
+        container.insertAdjacentHTML('beforeend', level1Html);
+    });
+}
+
+function toggleNext(el) {
+    var target = el.nextElementSibling;
+    if (target) {
+        target.style.display = (target.style.display === 'block') ? 'none' : 'block';
+    }
+    event.stopPropagation();
+}
+
+// ======== 统计面板控制功能 ========
+
+// 最小化/展开面板
+function minimizePanel() {
+    var panel = document.getElementById('stats-panel');
+    var btn = document.getElementById('minimize-btn');
+    
+    if (panel.classList.contains('minimized')) {
+        // 展开面板
+        panel.classList.remove('minimized');
+        btn.textContent = '−';
+        btn.title = '最小化面板';
+    } else {
+        // 最小化面板
+        panel.classList.add('minimized');
+        btn.textContent = '+';
+        btn.title = '展开面板';
+    }
+}
+
+// 收起全部展开的项目
+function collapseAll() {
+    var content = document.getElementById('stats-content');
+    
+    // 收起所有第2层
+    var allLevel2 = content.querySelectorAll('.level-2-container');
+    allLevel2.forEach(function(el) {
+        el.style.display = 'none';
+    });
+    
+    // 收起所有第3层
+    var allLevel3 = content.querySelectorAll('.level-3-detail');
+    allLevel3.forEach(function(el) {
+        el.style.display = 'none';
+    });
+}
+
+// ======== 优化后的搜索功能 ========
+
+// 高亮关键词的辅助函数
+function highlightKeyword(text, keyword) {
+    if (!keyword || !text) return text;
+    var regex = new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.replace(regex, '<span style="background-color:#ffeb3b; color:#000; font-weight:bold; padding:1px 2px; border-radius:2px;">$1</span>');
+}
+
+function onSearchInput() {
+    var kw = document.getElementById('search-input').value.trim();
+    var resultDiv = document.getElementById('search-results');
+    resultDiv.innerHTML = '';
+    if (kw === '') { 
+        resultDiv.style.display = 'none'; 
+        clearSearchHighlight();
+        return; 
+    }
+    
+    performSearch(kw);
+}
+
+function handleSearchKeydown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        var kw = document.getElementById('search-input').value.trim();
+        if (kw !== '') {
+            performSearch(kw);
+        }
+    }
+}
+
+function performSearch(kw) {
+    var resultDiv = document.getElementById('search-results');
+    resultDiv.innerHTML = '';
+    
+    if (!kw || kw.trim() === '') {
+        resultDiv.style.display = 'none';
+        clearSearchHighlight();
+        return;
+    }
+    
+    var kwLower = kw.toLowerCase();
+    var reitsResults = {};  // {reit: {assetType, cities: [{city, assets, coord}], hasMatch}}
+    
+    // 遍历所有资产数据，按REITs聚合
+    assetHierarchy.forEach(assetTypeData => {
+        var assetType = assetTypeData.asset_type;
+        assetTypeData.reits.forEach(reitData => {
+            var reit = reitData.reit;
+            var reitMatches = reit.toLowerCase().indexOf(kwLower) !== -1;
+            var hasAnyMatch = reitMatches;
+            
+            var citiesData = [];
+            
+            reitData.cities.forEach(cityData => {
+                var city = cityData.city;
+                var allAssets = cityData.assets;
+                
+                // 检查是否有资产匹配
+                var assetsMatch = allAssets.some(asset => 
+                    asset.toLowerCase().indexOf(kwLower) !== -1
+                );
+                
+                if (reitMatches || assetsMatch) {
+                    hasAnyMatch = true;
+                    var cityCoord = allCoords[city] || [0, 0];
+                    citiesData.push({
+                        city: city,
+                        assets: allAssets,
+                        lon: cityCoord[0],
+                        lat: cityCoord[1]
+                    });
+                }
+            });
+            
+            // 只要该REITs有任何匹配，就加入结果
+            if (hasAnyMatch && citiesData.length > 0) {
+                reitsResults[reit] = {
+                    reit: reit,
+                    assetType: assetType,
+                    cities: citiesData,
+                    reitMatches: reitMatches
+                };
+            }
+        });
+    });
+    
+    // 显示搜索结果
+    var resultsArray = Object.values(reitsResults);
+    if (resultsArray.length > 0) {
+        resultDiv.style.display = 'block';
+        
+        // 添加关闭按钮
+        var closeBtn = document.createElement('div');
+        closeBtn.className = 'search-close-btn';
+        closeBtn.innerHTML = '✕';
+        closeBtn.title = '关闭';
+        closeBtn.onclick = function(e) {
+            e.stopPropagation();
+            resultDiv.style.display = 'none';
+            resultDiv.dataset.pinned = 'false';
+        };
+        resultDiv.appendChild(closeBtn);
+        
+        var headerDiv = document.createElement('div');
+        headerDiv.style.cssText = 'padding:6px 12px; background:#e3f2fd; font-size:11px; font-weight:bold; color:#1976d2; border-bottom:1px solid #90caf9;';
+        headerDiv.textContent = '搜索结果 (' + resultsArray.length + ' 个REITs)';
+        resultDiv.appendChild(headerDiv);
+        
+        resultsArray.forEach(item => {
+            var div = document.createElement('div');
+            div.className = 'search-item';
+            div.style.cssText = 'padding:10px 12px; cursor:pointer; border-bottom:1px solid #eee;';
+            
+            // 计算总资产数
+            var totalAssets = 0;
+            item.cities.forEach(c => totalAssets += c.assets.length);
+            
+            // 构建城市和资产的HTML - 高亮关键词
+            var citiesHtml = item.cities.map(cityData => {
+                var cityName = highlightKeyword(cityData.city, kw);
+                var assetsHtml = cityData.assets.map(asset => {
+                    var highlightedAsset = highlightKeyword(asset, kw);
+                    return '<div style="padding-left:12px; color:#666; font-size:10px; line-height:1.6;">• ' + highlightedAsset + '</div>';
+                }).join('');
+                
+                return `
+                    <div style="margin-top:6px; padding:4px 0; border-left:2px solid #81c784; padding-left:8px;">
+                        <div style="font-size:11px; color:#00796b; font-weight:600;">📍 ${cityName} (${cityData.assets.length}项资产)</div>
+                        ${assetsHtml}
+                    </div>
+                `;
+            }).join('');
+            
+            // REITs标题 - 高亮关键词
+            var reitTitle = highlightKeyword(item.reit, kw);
+            var assetTypeText = highlightKeyword(item.assetType, kw);
+            
+            div.innerHTML = `
+                <div style="font-weight:bold; color:#1976d2; font-size:12px; margin-bottom:4px;">
+                    ${reitTitle} <span style="color:#666; font-size:10px;">(${assetTypeText})</span>
+                </div>
+                <div style="font-size:10px; color:#999; margin-bottom:4px;">
+                    ${item.cities.length} 个城市 | ${totalAssets} 项底层资产
+                </div>
+                ${citiesHtml}
+            `;
+            
+            // 点击任一城市定位到该城市
+            div.onclick = function(e) {
+                // 默认定位到第一个城市
+                var firstCity = item.cities[0];
+                navigateTo(firstCity.lon, firstCity.lat, 10);
+                keepSearchResultsVisible(item);
+                
+                // 高亮选中项
+                var allItems = resultDiv.querySelectorAll('.search-item');
+                allItems.forEach(i => i.style.background = '');
+                div.style.background = '#e3f2fd';
+            };
+            
+            resultDiv.appendChild(div);
+        });
+    } else { 
+        resultDiv.style.display = 'none'; 
+    }
+}
+
+// 保持搜索结果可见，直到下一次搜索
+function keepSearchResultsVisible(selectedItem) {
+    var resultDiv = document.getElementById('search-results');
+    var searchInput = document.getElementById('search-input');
+    
+    // 标记当前为"固定显示"模式
+    resultDiv.dataset.pinned = 'true';
+    resultDiv.dataset.selectedReit = selectedItem.reit;
+}
+
+// 清除搜索高亮
+function clearSearchHighlight() {
+    var resultDiv = document.getElementById('search-results');
+    resultDiv.dataset.pinned = 'false';
+}
+
+document.addEventListener('click', e => {
+    var resultDiv = document.getElementById('search-results');
+    var searchInput = document.getElementById('search-input');
+    
+    // 如果点击的不是搜索框，且不在固定模式下，则关闭搜索结果
+    if (e.target.id !== 'search-input' && !resultDiv.contains(e.target)) {
+        if (resultDiv.dataset.pinned !== 'true') {
+            resultDiv.style.display = 'none';
+        }
+    }
+});
+
+// 改进的滚轮控制 - 全屏任何地方都能缩放
+window.addEventListener('wheel', function(e) {
+    var searchResults = document.getElementById('search-results');
+    var statsContent = document.getElementById('stats-content');
+    
+    // 只在搜索结果和统计面板内部允许滚动
+    if (searchResults && searchResults.contains(e.target)) {
+        // 检查是否到达边界
+        if ((e.deltaY < 0 && searchResults.scrollTop === 0) || 
+            (e.deltaY > 0 && searchResults.scrollTop + searchResults.clientHeight >= searchResults.scrollHeight)) {
+            e.preventDefault();
+        }
+        return;
+    }
+    
+    if (statsContent && statsContent.contains(e.target)) {
+        // 检查是否到达边界
+        if ((e.deltaY < 0 && statsContent.scrollTop === 0) || 
+            (e.deltaY > 0 && statsContent.scrollTop + statsContent.clientHeight >= statsContent.scrollHeight)) {
+            e.preventDefault();
+        }
+        return;
+    }
+    
+    // 其他所有区域都阻止默认滚动,让ECharts处理地图缩放
+    e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('load', function() {
+    renderStats();
+    
+    var chart = getChartInstance();
+    if (chart) {
+        chart.on('georoam', function(params) {
+            if (params.zoom != null) {
+                var option = chart.getOption();
+                currentZoom = option.geo[0].zoom;
+                updateMapData(currentZoom);
+            }
+        });
+        
+        chart.on('dblclick', function(params) {
+            if (params.componentType === 'series') {
+                var targetData = isProvinceView ? provinceData : cityData;
+                var location = targetData.find(c => c.name === params.name);
+                if (location) {
+                    navigateTo(location.value[0], location.value[1], 8);
+                }
+            }
+        });
+        
+        window.addEventListener('resize', function() {
+            chart.resize();
+        });
+    }
+});
+</script>
+
+    <div id="7c93fc37609145d5867c70e757309048" style="width:100%; height:100vh;"></div>
+    <script>
+        var chart_7c93fc37609145d5867c70e757309048 = echarts.init(
+            document.getElementById('7c93fc37609145d5867c70e757309048'), 'white', {renderer: 'canvas'});
+        var option_7c93fc37609145d5867c70e757309048 = {
+    "backgroundColor": "#f4f4f4",
+    "color": [
+        "#c23531",
+        "#2f4554",
+        "#61a0a8",
+        "#d48265",
+        "#749f83",
+        "#ca8622",
+        "#bda29a",
+        "#6e7074",
+        "#546570",
+        "#c4ccd3",
+        "#f05b72",
+        "#ef5b9c",
+        "#f47920",
+        "#905a3d",
+        "#fab27b",
+        "#2a5caa",
+        "#444693",
+        "#726930",
+        "#b2d235",
+        "#6d8346",
+        "#ac6767",
+        "#1d953f",
+        "#6950a1",
+        "#918597"
+    ],
+    "series": [
+        {
+            "type": "effectScatter",
+            "name": "\u4e2d\u56fdREITs\u5206\u5e03",
+            "coordinateSystem": "geo",
+            "showEffectOn": "render",
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            },
+            "symbolSize": 13,
+            "data": [
+                {
+                    "name": "\u4e0a\u6d77\u5e02",
+                    "value": [
+                        121.473662,
+                        31.230372,
+                        9
+                    ]
+                },
+                {
+                    "name": "\u6d59\u6c5f\u7701",
+                    "value": [
+                        120.152585,
+                        30.266597,
+                        9
+                    ]
+                },
+                {
+                    "name": "\u5317\u4eac\u5e02",
+                    "value": [
+                        116.407394,
+                        39.904211,
+                        9
+                    ]
+                },
+                {
+                    "name": "\u6e56\u5317\u7701",
+                    "value": [
+                        114.341745,
+                        30.546557,
+                        8
+                    ]
+                },
+                {
+                    "name": "\u5c71\u4e1c\u7701",
+                    "value": [
+                        117.019915,
+                        36.671156,
+                        6
+                    ]
+                },
+                {
+                    "name": "\u5b89\u5fbd\u7701",
+                    "value": [
+                        117.329949,
+                        31.733806,
+                        5
+                    ]
+                },
+                {
+                    "name": "\u5e7f\u4e1c\u7701",
+                    "value": [
+                        113.26641,
+                        23.132324,
+                        14
+                    ]
+                },
+                {
+                    "name": "\u91cd\u5e86\u5e02",
+                    "value": [
+                        106.551643,
+                        29.562849,
+                        5
+                    ]
+                },
+                {
+                    "name": "\u5185\u8499\u53e4\u81ea\u6cbb\u533a",
+                    "value": [
+                        111.76629,
+                        40.81739,
+                        2
+                    ]
+                },
+                {
+                    "name": "\u6cb3\u5317\u7701",
+                    "value": [
+                        114.530235,
+                        38.037433,
+                        4
+                    ]
+                },
+                {
+                    "name": "\u6e56\u5357\u7701",
+                    "value": [
+                        112.9836,
+                        28.112743,
+                        3
+                    ]
+                },
+                {
+                    "name": "\u5929\u6d25\u5e02",
+                    "value": [
+                        117.200983,
+                        39.084158,
+                        3
+                    ]
+                },
+                {
+                    "name": "\u56db\u5ddd\u7701",
+                    "value": [
+                        104.075809,
+                        30.651239,
+                        4
+                    ]
+                },
+                {
+                    "name": "\u6c5f\u82cf\u7701",
+                    "value": [
+                        118.762765,
+                        32.060875,
+                        12
+                    ]
+                },
+                {
+                    "name": "\u8fbd\u5b81\u7701",
+                    "value": [
+                        123.431382,
+                        41.836175,
+                        1
+                    ]
+                },
+                {
+                    "name": "\u798f\u5efa\u7701",
+                    "value": [
+                        119.295143,
+                        26.100779,
+                        2
+                    ]
+                },
+                {
+                    "name": "\u65b0\u7586\u7ef4\u543e\u5c14\u81ea\u6cbb\u533a",
+                    "value": [
+                        87.627704,
+                        43.793026,
+                        2
+                    ]
+                },
+                {
+                    "name": "\u9655\u897f\u7701",
+                    "value": [
+                        108.954347,
+                        34.265502,
+                        1
+                    ]
+                },
+                {
+                    "name": "\u4e91\u5357\u7701",
+                    "value": [
+                        102.710002,
+                        25.045806,
+                        1
+                    ]
+                },
+                {
+                    "name": "\u8d35\u5dde\u7701",
+                    "value": [
+                        106.70546,
+                        26.600055,
+                        1
+                    ]
+                }
+            ],
+            "label": {
+                "show": true,
+                "position": "right",
+                "margin": 8,
+                "fontSize": 11,
+                "formatter": "{b}"
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u4e2d\u56fdREITs\u5206\u5e03"
+            ],
+            "selected": {
+                "\u4e2d\u56fdREITs\u5206\u5e03": true
+            },
+            "show": true
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "formatter": function (params) {    var province_info = [{'name': '\u4e0a\u6d77\u5e02', 'value': [121.473662, 31.230372, 9, '<b>\u4e0a\u6d77\u5e02(\u5171\u6709 9 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u534e\u590f\u57fa\u91d1\u534e\u6da6\u6709\u5de2(\u4fdd\u79df\u623f)<br/>\u2022 \u534e\u5b89\u5916\u9ad8\u6865(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u5b89\u5f20\u6c5f\u4ea7\u4e1a\u56ed(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u534e\u5b89\u767e\u8054\u6d88\u8d39(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u56fd\u6cf0\u6d77\u901a\u4e1c\u4e45\u65b0\u7ecf\u6d4e(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u56fd\u6cf0\u6d77\u901a\u4e34\u6e2f\u521b\u65b0\u4ea7\u4e1a\u56ed(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u56fd\u6cf0\u6d77\u901a\u57ce\u6295\u5bbd\u5ead\u4fdd\u79df\u623f(\u4fdd\u79df\u623f)<br/>\u2022 \u62db\u5546\u79d1\u521b(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u6c47\u6dfb\u5bcc\u4e0a\u6d77\u5730\u4ea7\u79df\u8d41\u4f4f\u623f(\u4fdd\u79df\u623f)']}, {'name': '\u6d59\u6c5f\u7701', 'value': [120.152585, 30.266597, 9, '<b>\u6d59\u6c5f\u7701(\u5171\u6709 9 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u91d1\u5370\u529b\u6d88\u8d39(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u4e2d\u91d1\u552f\u54c1\u4f1a\u5965\u83b1(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u4e2d\u94f6\u4e2d\u5916\u8fd0\u4ed3\u50a8\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u590f\u534e\u7535\u6e05\u6d01\u80fd\u6e90(\u80fd\u6e90)<br/>\u2022 \u534e\u590f\u548c\u8fbe\u9ad8\u79d1(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u534e\u6cf0\u5b9d\u6e7e\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u5e73\u5b89\u5b81\u6ce2\u4ea4\u6295(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u6d59\u5546\u6caa\u676d\u752c(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u94f6\u534e\u7ecd\u5174\u539f\u6c34\u6c34\u5229(\u6c34\u5229)']}, {'name': '\u5317\u4eac\u5e02', 'value': [116.407394, 39.904211, 9, '<b>\u5317\u4eac\u5e02(\u5171\u6709 9 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u822a\u9996\u94a2\u7eff\u80fd(\u751f\u6001\u73af\u4fdd)<br/>\u2022 \u4e2d\u91d1\u4ea6\u5e84\u4ea7\u4e1a\u56ed(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u4e2d\u91d1\u666e\u6d1b\u65af(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u4e2d\u91d1\u8054\u4e1c\u79d1\u521b(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u521b\u91d1\u5408\u4fe1\u9996\u519c(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u534e\u590f\u5317\u4eac\u4fdd\u969c\u623f(\u4fdd\u79df\u623f)<br/>\u2022 \u534e\u590f\u91d1\u9685\u667a\u9020\u5de5\u573a(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u5609\u5b9e\u7269\u7f8e\u6d88\u8d39(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u5efa\u4fe1\u4e2d\u5173\u6751(\u4ea7\u4e1a\u56ed)']}, {'name': '\u6e56\u5317\u7701', 'value': [114.341745, 30.546557, 8, '<b>\u6e56\u5317\u7701(\u5171\u6709 8 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u822a\u4eac\u80fd\u5149\u4f0f(\u80fd\u6e90)<br/>\u2022 \u4e2d\u91d1\u6e56\u5317\u79d1\u6295\u5149\u8c37(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u534e\u590f\u4e2d\u56fd\u4ea4\u5efa(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u534e\u590f\u8d8a\u79c0\u9ad8\u901f(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u534e\u590f\u9996\u521b\u5965\u83b1(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u5357\u65b9\u987a\u4e30\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u5609\u5b9e\u4eac\u4e1c\u4ed3\u50a8\u57fa\u7840\u8bbe\u65bd(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u6c47\u6dfb\u5bcc\u4e5d\u5dde\u901a\u533b\u836f(\u7269\u6d41\u4ed3\u50a8)']}, {'name': '\u5c71\u4e1c\u7701', 'value': [117.019915, 36.671156, 6, '<b>\u5c71\u4e1c\u7701(\u5171\u6709 6 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u91d1\u4e2d\u56fd\u7eff\u53d1\u5546\u4e1a(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u4e2d\u91d1\u5c71\u4e1c\u9ad8\u901f(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u4e2d\u91d1\u666e\u6d1b\u65af(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u590f\u534e\u6da6\u5546\u4e1a(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u534e\u590f\u9996\u521b\u5965\u83b1(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u56fd\u6cf0\u6d77\u901a\u6d4e\u5357\u80fd\u6e90\u4f9b\u70ed(\u5e02\u653f\u516c\u7528)']}, {'name': '\u5b89\u5fbd\u7701', 'value': [117.329949, 31.733806, 5, '<b>\u5b89\u5fbd\u7701(\u5171\u6709 5 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u91d1\u5b89\u5fbd\u4ea4\u63a7(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u534e\u590f\u5408\u80a5\u9ad8\u65b0(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u5357\u65b9\u987a\u4e30\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u5bcc\u56fd\u9996\u521b\u6c34\u52a1(\u751f\u6001\u73af\u4fdd)<br/>\u2022 \u62db\u5546\u9ad8\u901f\u516c\u8def(\u4ea4\u901a\u8bbe\u65bd)']}, {'name': '\u5e7f\u4e1c\u7701', 'value': [113.26641, 23.132324, 14, '<b>\u5e7f\u4e1c\u7701(\u5171\u6709 14 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u91d1\u666e\u6d1b\u65af(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u590f\u4e2d\u6d77\u5546\u4e1a(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u534e\u590f\u51ef\u5fb7\u5546\u4e1a(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u534e\u590f\u5b89\u535a\u4ed3\u50a8(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u590f\u6df1\u56fd\u9645(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u5357\u65b9\u987a\u4e30\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u535a\u65f6\u86c7\u53e3\u4ea7\u56ed(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u5bcc\u56fd\u9996\u521b\u6c34\u52a1(\u751f\u6001\u73af\u4fdd)<br/>\u2022 \u5e73\u5b89\u5e7f\u5dde\u5e7f\u6cb3(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u62db\u5546\u57fa\u91d1\u86c7\u53e3\u79df\u8d41\u4f4f\u623f(\u4fdd\u79df\u623f)<br/>\u2022 \u6613\u65b9\u8fbe\u5e7f\u5f00\u4ea7\u56ed(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u7ea2\u571f\u521b\u65b0\u6df1\u5733\u5b89\u5c45(\u4fdd\u79df\u623f)<br/>\u2022 \u7ea2\u571f\u521b\u65b0\u76d0\u7530\u6e2f(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u9e4f\u534e\u6df1\u5733\u80fd\u6e90(\u80fd\u6e90)']}, {'name': '\u91cd\u5e86\u5e02', 'value': [106.551643, 29.562849, 5, '<b>\u91cd\u5e86\u5e02(\u5171\u6709 5 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u91d1\u666e\u6d1b\u65af(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u4e2d\u91d1\u91cd\u5e86\u4e24\u6c5f(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u5609\u5b9e\u4eac\u4e1c\u4ed3\u50a8\u57fa\u7840\u8bbe\u65bd(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u56fd\u6cf0\u6d77\u901a\u4e1c\u4e45\u65b0\u7ecf\u6d4e(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u56fd\u91d1\u4e2d\u56fd\u94c1\u5efa(\u4ea4\u901a\u8bbe\u65bd)']}, {'name': '\u5185\u8499\u53e4\u81ea\u6cbb\u533a', 'value': [111.76629, 40.81739, 2, '<b>\u5185\u8499\u53e4\u81ea\u6cbb\u533a(\u5171\u6709 2 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u4fe1\u5efa\u6295\u660e\u9633\u667a\u80fd\u65b0\u80fd\u6e90(\u80fd\u6e90)<br/>\u2022 \u5de5\u94f6\u8499\u80fd\u6e05\u6d01\u80fd\u6e90(\u80fd\u6e90)']}, {'name': '\u6cb3\u5317\u7701', 'value': [114.530235, 38.037433, 4, '<b>\u6cb3\u5317\u7701(\u5171\u6709 4 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u4fe1\u5efa\u6295\u660e\u9633\u667a\u80fd\u65b0\u80fd\u6e90(\u80fd\u6e90)<br/>\u2022 \u5357\u65b9\u6da6\u6cfd\u79d1\u6280\u6570\u636e\u4e2d\u5fc3(\u6570\u636e\u4e2d\u5fc3)<br/>\u2022 \u5609\u5b9e\u4eac\u4e1c\u4ed3\u50a8\u57fa\u7840\u8bbe\u65bd(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u5de5\u94f6\u6cb3\u5317\u9ad8\u901f(\u4ea4\u901a\u8bbe\u65bd)']}, {'name': '\u6e56\u5357\u7701', 'value': [112.9836, 28.112743, 3, '<b>\u6e56\u5357\u7701(\u5171\u6709 3 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u534e\u590f\u51ef\u5fb7\u5546\u4e1a(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u534e\u590f\u91d1\u8302\u5546\u4e1a(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u6613\u65b9\u8fbe\u6df1\u9ad8\u901f(\u4ea4\u901a\u8bbe\u65bd)']}, {'name': '\u5929\u6d25\u5e02', 'value': [117.200983, 39.084158, 3, '<b>\u5929\u6d25\u5e02(\u5171\u6709 3 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u94f6\u4e2d\u5916\u8fd0\u4ed3\u50a8\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u6cf0\u5b9d\u6e7e\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u535a\u65f6\u6d25\u5f00\u4ea7\u56ed(\u4ea7\u4e1a\u56ed)']}, {'name': '\u56db\u5ddd\u7701', 'value': [104.075809, 30.651239, 4, '<b>\u56db\u5ddd\u7701(\u5171\u6709 4 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u94f6\u4e2d\u5916\u8fd0\u4ed3\u50a8\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u590f\u5927\u60a6\u57ce\u5546\u4e1a(\u6d88\u8d39\u5546\u4e1a)<br/>\u2022 \u5609\u5b9e\u4e2d\u56fd\u7535\u5efa\u6e05\u6d01\u80fd\u6e90(\u80fd\u6e90)<br/>\u2022 \u5e7f\u53d1\u6210\u90fd\u9ad8\u6295\u4ea7\u4e1a\u56ed(\u4ea7\u4e1a\u56ed)']}, {'name': '\u6c5f\u82cf\u7701', 'value': [118.762765, 32.060875, 12, '<b>\u6c5f\u82cf\u7701(\u5171\u6709 12 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e1c\u5434\u82cf\u56ed\u4ea7\u4e1a(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u4e2d\u4fe1\u5efa\u6295\u56fd\u5bb6\u7535\u6295\u65b0\u80fd\u6e90(\u80fd\u6e90)<br/>\u2022 \u4e2d\u822a\u6613\u5546\u4ed3\u50a8\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u4e2d\u91d1\u666e\u6d1b\u65af(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u4e2d\u94f6\u4e2d\u5916\u8fd0\u4ed3\u50a8\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u590f\u5357\u4eac\u4ea4\u901a\u9ad8\u901f\u516c\u8def(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u534e\u6cf0\u5357\u4eac\u5efa\u90ba(\u4ea7\u4e1a\u56ed)<br/>\u2022 \u534e\u6cf0\u5b9d\u6e7e\u7269\u6d41(\u7269\u6d41\u4ed3\u50a8)<br/>\u2022 \u534e\u6cf0\u6c5f\u82cf\u4ea4\u63a7(\u4ea4\u901a\u8bbe\u65bd)<br/>\u2022 \u534e\u6cf0\u82cf\u5dde\u6052\u6cf0\u79df\u8d41\u4f4f\u623f(\u4fdd\u79df\u623f)<br/>\u2022 \u5357\u65b9\u4e07\u56fd\u6570\u636e\u4e2d\u5fc3(\u6570\u636e\u4e2d\u5fc3)<br/>\u2022 \u56fd\u6cf0\u6d77\u901a\u4e1c\u4e45\u65b0\u7ecf\u6d4e(\u4ea7\u4e1a\u56ed)']}, {'name': '\u8fbd\u5b81\u7701', 'value': [123.431382, 41.836175, 1, '<b>\u8fbd\u5b81\u7701(\u5171\u6709 1 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u4fe1\u5efa\u6295\u6c88\u9633\u56fd\u9645\u8f6f\u4ef6\u56ed(\u4ea7\u4e1a\u56ed)']}, {'name': '\u798f\u5efa\u7701', 'value': [119.295143, 26.100779, 2, '<b>\u798f\u5efa\u7701(\u5171\u6709 2 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u91d1\u53a6\u95e8\u5b89\u5c45(\u4fdd\u79df\u623f)<br/>\u2022 \u6613\u65b9\u8fbe\u534e\u5a01\u5e02\u573a(\u6d88\u8d39\u5546\u4e1a)']}, {'name': '\u65b0\u7586\u7ef4\u543e\u5c14\u81ea\u6cbb\u533a', 'value': [87.627704, 43.793026, 2, '<b>\u65b0\u7586\u7ef4\u543e\u5c14\u81ea\u6cbb\u533a(\u5171\u6709 2 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u534e\u590f\u4e2d\u6838\u6e05\u6d01\u80fd\u6e90(\u80fd\u6e90)<br/>\u2022 \u534e\u590f\u7279\u53d8\u7535\u5de5\u65b0\u80fd\u6e90(\u80fd\u6e90)']}, {'name': '\u9655\u897f\u7701', 'value': [108.954347, 34.265502, 1, '<b>\u9655\u897f\u7701(\u5171\u6709 1 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u822a\u4eac\u80fd\u5149\u4f0f(\u80fd\u6e90)']}, {'name': '\u4e91\u5357\u7701', 'value': [102.710002, 25.045806, 1, '<b>\u4e91\u5357\u7701(\u5171\u6709 1 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u4e2d\u822a\u4eac\u80fd\u5149\u4f0f(\u80fd\u6e90)']}, {'name': '\u8d35\u5dde\u7701', 'value': [106.70546, 26.600055, 1, '<b>\u8d35\u5dde\u7701(\u5171\u6709 1 \u4e2aREITs\u9879\u76ee)</b><br/>\u2022 \u534e\u590f\u6df1\u56fd\u9645(\u7269\u6d41\u4ed3\u50a8)']}];    for (var i=0; i<province_info.length; i++) {        if (province_info[i].name === params.name) {            return province_info[i].value[3];        }    }    return params.name;},
+        "textStyle": {
+            "fontSize": 14
+        },
+        "borderWidth": 0
+    },
+    "title": [
+        {}
+    ],
+    "visualMap": {
+        "type": "piecewise",
+        "min": 1,
+        "max": 14,
+        "textStyle": {
+            "fontSize": 12
+        },
+        "inRange": {
+            "color": [
+                "#4575b4",
+                "#3C9BC9",
+                "#74add1",
+                "#95CBC9",
+                "#ADC9AB",
+                "#E2C89A",
+                "#FBC08A",
+                "#FAA26F",
+                "#F97F5F",
+                "#F46d43",
+                "#d73027"
+            ]
+        },
+        "calculable": true,
+        "splitNumber": 5,
+        "orient": "vertical",
+        "left": "10",
+        "bottom": "10",
+        "showLabel": true,
+        "pieces": [
+            {
+                "min": 1,
+                "max": 1,
+                "label": "1"
+            },
+            {
+                "min": 2,
+                "max": 2,
+                "label": "2"
+            },
+            {
+                "min": 3,
+                "max": 3,
+                "label": "3"
+            },
+            {
+                "min": 4,
+                "max": 4,
+                "label": "4"
+            },
+            {
+                "min": 5,
+                "max": 5,
+                "label": "5"
+            },
+            {
+                "min": 6,
+                "max": 6,
+                "label": "6"
+            },
+            {
+                "min": 7,
+                "max": 7,
+                "label": "7"
+            },
+            {
+                "min": 8,
+                "max": 8,
+                "label": "8"
+            },
+            {
+                "min": 9,
+                "max": 9,
+                "label": "9"
+            },
+            {
+                "min": 10,
+                "max": 10,
+                "label": "10"
+            },
+            {
+                "min": 11,
+                "max": 14,
+                "label": "11+"
+            }
+        ]
+    },
+    "graphic": [
+        {
+            "type": "group",
+            "diffChildrenByName": false,
+            "children": [
+                {
+                    "type": "text",
+                    "$action": "merge",
+                    "rotation": 0,
+                    "left": "center",
+                    "bottom": "5",
+                    "bounding": "all",
+                    "z": 0,
+                    "zlevel": 0,
+                    "silent": false,
+                    "invisible": false,
+                    "ignore": false,
+                    "cursor": "pointer",
+                    "draggable": false,
+                    "progressive": false,
+                    "width": 0,
+                    "height": 0,
+                    "style": {
+                        "text": "\u6570\u636e\u6765\u6e90: Wind, iFind | \u539f\u521b\u5236\u4f5c: Qimai | \u66f4\u65b0\u65e5\u671f: 2026-02",
+                        "x": 0,
+                        "y": 0,
+                        "font": "12px Arial",
+                        "textAlign": "left",
+                        "fill": "#666666",
+                        "line_width": 0
+                    }
+                }
+            ],
+            "$action": "merge",
+            "rotation": 0,
+            "left": "center",
+            "bottom": "5",
+            "bounding": "all",
+            "z": 0,
+            "zlevel": 0,
+            "silent": false,
+            "invisible": false,
+            "ignore": false,
+            "cursor": "pointer",
+            "draggable": false,
+            "progressive": false,
+            "width": 0,
+            "height": 0
+        }
+    ],
+    "geo": {
+        "map": "china",
+        "zoom": 1.65,
+        "center": [
+            108,
+            35
+        ],
+        "roam": true,
+        "itemStyle": {
+            "color": "#d0e1f9",
+            "borderColor": "#ffffff"
+        },
+        "emphasis": {}
+    }
+};
+        chart_7c93fc37609145d5867c70e757309048.setOption(option_7c93fc37609145d5867c70e757309048);
+    </script>
+</body>
+</html>
