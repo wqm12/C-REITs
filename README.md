@@ -20,8 +20,9 @@
 ## 主要文件
 
 - `index.html`：GitHub Pages 网站入口，始终同步最新地图 HTML
-- `Full Code.ipynb`：历史完整版本参考
 - `reits_map_updated.py`：当前可运行主脚本
+- `REITs_location_updating.xlsx`：当前地图明细数据源
+- `location.csv`：城市 / 省份经纬度匹配底表
 - `REITs地图更新版.ipynb`：当前同步 notebook 版本
 
 ## 更新方式
