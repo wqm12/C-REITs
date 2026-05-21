@@ -192,7 +192,6 @@ PROJECT_DIR = find_project_root(ANCHOR_PATH)
 DATA_FILE = PROJECT_DIR / "REITs_location_updating.xlsx"
 LOCATION_FILE = PROJECT_DIR / "location.csv"
 RUN_DATE_SUFFIX = datetime.now().strftime("%Y%m%d")
-DISPLAY_DATE = datetime.now().strftime("%Y-%m")
 PROCESS_DIR = PROJECT_DIR / f"process_{RUN_DATE_SUFFIX}_local_assets"
 PROCESS_DIR.mkdir(exist_ok=True)
 TEMP_HTML_PATH = PROCESS_DIR / f"REITs详细分布图_{RUN_DATE_SUFFIX}temp.html"
@@ -501,7 +500,7 @@ geo.set_global_opts(
                 opts.GraphicText(
                     graphic_item=opts.GraphicItem(left="center", bottom="10"),
                     graphic_textstyle_opts=opts.GraphicTextStyleOpts(
-                        text=f"数据来源: Wind, iFind | 原创制作: Qimai | 制作日期: {DISPLAY_DATE}",
+                        text="数据来源: Wind, iFind | 原创制作: Qimai | 制作日期: 2026-04",
                         font="12px Arial",
                         graphic_basicstyle_opts=opts.GraphicBasicStyleOpts(fill="#666666")
                     )
@@ -778,7 +777,7 @@ function buildFooterGraphic() {{
             left: 'center',
             bottom: 10,
             style: {{
-                text: '数据来源: Wind, iFind | 原创制作: Qimai | 制作日期: {DISPLAY_DATE}',
+                text: '数据来源: Wind, iFind | 原创制作: Qimai | 制作日期: 2026-04',
                 font: '12px Arial',
                 fill: '#666666'
             }}

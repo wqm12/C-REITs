@@ -8,15 +8,14 @@ https://wqm12.github.io/C-REITs/
 
 ## 当前版本
 
-当前根目录是 2026-05-21 最新版本，访问 GitHub Pages 时会直接打开最新地图页面。
+当前根目录是 2026-05-06 最新版本，访问 GitHub Pages 时会直接打开最新地图页面。
 
 主要变化：
 
 - 使用 `reits_map.py` 作为最新维护脚本。
-- 使用 `REITs详细分布图_20260521.html` 同步生成根目录 `index.html`。
-- 地图底部制作日期按运行月份自动生成，本版显示为 `2026-05`。
+- 使用 `REITs详细分布图_20260506.html` 同步生成根目录 `index.html`。
 - 内嵌 `echarts.min.js` 和 `china.js`，减少外部 CDN 依赖，方便国内网络环境直接访问。
-- 保留上一轮 GitHub Pages 版本到 `history/20260506/`，并继续保留更早的 `history/20260426/`。
+- 保留上一轮 GitHub 上传版本到 `history/20260426/`。
 
 ## 文件说明
 
@@ -27,8 +26,7 @@ https://wqm12.github.io/C-REITs/
 - `echarts.min.js`：ECharts 前端运行依赖。
 - `china.js`：中国地图前端运行依赖。
 - `地图设计思路与结构说明.md`：当前地图设计、数据流和发布结构说明。
-- `history/20260506/`：上一轮 GitHub Pages 版本的历史快照。
-- `history/20260426/`：更早一轮 GitHub 上传版本的历史快照。
+- `history/20260426/`：上一轮 GitHub 上传版本的历史快照。
 
 ## 本地生成方式
 
