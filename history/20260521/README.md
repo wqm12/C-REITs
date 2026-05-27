@@ -1,20 +1,6 @@
 # C-REITs
 
 中国公募 REITs 地图网站。
-在线入口：https://wqm12.github.io/C-REITs/
-
-## 当前版本（2026-05-27）
-
-本次发布使用 2026-05-27 更新后的 `REITs_location_updating.xlsx`，新增易方达广西北投高速公路记录，并将最新生成的 `REITs详细分布图_20260527.html` 同步为仓库根目录 `index.html`。
-
-- 页面底部制作日期由 `DISPLAY_DATE = datetime.now().strftime("%Y-%m")` 自动生成，当前显示 `2026-05`。
-- 生成批次文件名由 `RUN_DATE_SUFFIX = datetime.now().strftime("%Y%m%d")` 自动生成，当前批次为 `20260527`。
-- `history/20260521/` 保存上一轮线上版本，`history/20260506/` 和 `history/20260426/` 继续保留更早历史版本。
-- `index.html` 已内嵌 `echarts.min.js` 和 `china.js`，不依赖外部 CDN。
-
-> 注：下方为仓库早期说明，当前版本信息以本节为准。
-
-中国公募 REITs 地图网站。
 
 在线入口：
 
