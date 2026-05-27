@@ -25,19 +25,6 @@ VISUAL_MAP_COLORS = [
     "#E2C89A", "#FBC08A", "#FAA26F", "#F97F5F", "#F46d43", "#d73027",
 ]
 
-PLACE_NAME_ALIASES = {
-    "广西": "广西壮族自治区",
-    "广西省": "广西壮族自治区",
-    "内蒙古": "内蒙古自治区",
-    "内蒙古省": "内蒙古自治区",
-    "宁夏": "宁夏回族自治区",
-    "宁夏省": "宁夏回族自治区",
-    "新疆": "新疆维吾尔自治区",
-    "新疆省": "新疆维吾尔自治区",
-    "西藏": "西藏自治区",
-    "西藏省": "西藏自治区",
-}
-
 
 def is_missing(value):
     if value is None:
@@ -161,24 +148,14 @@ def build_location_lookup(df_loc):
     return working.set_index("name")[["longitude", "latitude"]].to_dict("index")
 
 
-def resolve_place_name(name, loc_dict):
-    if name in loc_dict:
-        return name
-    alias = PLACE_NAME_ALIASES.get(name)
-    if alias in loc_dict:
-        return alias
-    return None
-
-
 def build_coord_string(place_text, loc_dict):
     names = split_place_names(place_text)
     coords = []
     for name in names:
-        resolved_name = resolve_place_name(name, loc_dict)
-        if resolved_name is None:
+        if name not in loc_dict:
             continue
-        lon = loc_dict[resolved_name]["longitude"]
-        lat = loc_dict[resolved_name]["latitude"]
+        lon = loc_dict[name]["longitude"]
+        lat = loc_dict[name]["latitude"]
         coords.append(f"({lon},{lat})")
     return ",".join(coords) if coords else None
 
