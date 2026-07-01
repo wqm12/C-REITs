@@ -520,7 +520,51 @@ COLLAPSE_ALL_JS = r"""function collapseAll() {
 }"""
 
 
-PERFORM_SEARCH_JS = r"""function performSearch(kw) {
+PERFORM_SEARCH_JS = r"""function renderSearchItemDetails(cities, kw, expanded) {
+    var cityLimit = expanded ? cities.length : 3;
+    var html = '';
+
+    cities.slice(0, cityLimit).forEach(cityData => {
+        html += `<div class="search-city-row" style="font-size:10px; color:#34495e; margin:3px 0;">
+            <span style="color:#16a085">📍 ${cityData.city}</span> (${cityData.assets.length}项资产)
+        </div>`;
+
+        var assetLimit = expanded ? cityData.assets.length : 3;
+        cityData.assets.slice(0, assetLimit).forEach(asset => {
+            html += `<div class="search-asset-row" style="font-size:10px; color:#7f8c8d; padding-left:15px; line-height:1.4;">
+                • ${highlightKeyword(asset, kw)}
+            </div>`;
+        });
+
+        if (!expanded && cityData.assets.length > assetLimit) {
+            html += `<div data-search-expand="assets" style="font-size:10px; color:#5b9bd5; padding-left:15px; cursor:pointer;">
+                还有 ${cityData.assets.length - assetLimit} 项资产...
+            </div>`;
+        }
+    });
+
+    if (!expanded && cities.length > cityLimit) {
+        html += `<div data-search-expand="cities" style="font-size:10px; color:#5b9bd5; margin-top:4px; cursor:pointer;">
+            还有 ${cities.length - cityLimit} 个城市...
+        </div>`;
+    }
+    return html;
+}
+
+function expandCurrentReit(div, cities, kw, resultDiv) {
+    var details = div.querySelector('.search-item-details');
+    if (details) {
+        details.innerHTML = renderSearchItemDetails(cities, kw, true);
+        div.dataset.expanded = 'true';
+    }
+    if (cities.length > 0) {
+        var firstCity = cities[0];
+        navigateTo(firstCity.lon, firstCity.lat, 8);
+        resultDiv.dataset.pinned = 'true';
+    }
+}
+
+function performSearch(kw) {
     var resultDiv = document.getElementById('search-results');
     resultDiv.innerHTML = '';
 
@@ -539,7 +583,8 @@ PERFORM_SEARCH_JS = r"""function performSearch(kw) {
             (categoryData.reits || []).forEach(reitData => {
                 var reit = reitData.reit;
                 var reitMatches = reit.toLowerCase().indexOf(kwLower) !== -1;
-                var citiesData = [];
+                var allCitiesData = [];
+                var anyAssetMatches = false;
 
                 (reitData.cities || []).forEach(cityData => {
                     var city = cityData.city;
@@ -547,19 +592,17 @@ PERFORM_SEARCH_JS = r"""function performSearch(kw) {
                     var assetsMatch = allAssets.some(asset =>
                         asset.toLowerCase().indexOf(kwLower) !== -1
                     );
-
-                    if (reitMatches || assetsMatch) {
-                        var cityCoord = allCoords[city] || [0, 0];
-                        citiesData.push({
-                            city: city,
-                            assets: allAssets,
-                            lon: cityCoord[0],
-                            lat: cityCoord[1]
-                        });
-                    }
+                    anyAssetMatches = anyAssetMatches || assetsMatch;
+                    var cityCoord = allCoords[city] || [0, 0];
+                    allCitiesData.push({
+                        city: city,
+                        assets: allAssets,
+                        lon: cityCoord[0],
+                        lat: cityCoord[1]
+                    });
                 });
 
-                if (citiesData.length > 0) {
+                if (reitMatches || anyAssetMatches) {
                     if (!reitsResults[reit]) {
                         reitsResults[reit] = {
                             reit: reit,
@@ -568,7 +611,7 @@ PERFORM_SEARCH_JS = r"""function performSearch(kw) {
                             reitMatches: reitMatches
                         };
                     }
-                    reitsResults[reit].cities = reitsResults[reit].cities.concat(citiesData);
+                    reitsResults[reit].cities = reitsResults[reit].cities.concat(allCitiesData);
                 }
             });
         });
@@ -576,6 +619,7 @@ PERFORM_SEARCH_JS = r"""function performSearch(kw) {
 
     var resultsArray = Object.values(reitsResults);
     if (resultsArray.length > 0) {
+        var showFullDetails = resultsArray.length === 1;
         resultDiv.style.display = 'block';
 
         var closeBtn = document.createElement('div');
@@ -624,30 +668,15 @@ PERFORM_SEARCH_JS = r"""function performSearch(kw) {
             html += `<div style="font-size:10px; color:#95a5a6; margin-bottom:6px;">
                 ${cities.length} 个城市 | ${totalAssets} 项底层资产
             </div>`;
-
-            cities.slice(0, 3).forEach(cityData => {
-                html += `<div style="font-size:10px; color:#34495e; margin:3px 0;">
-                    <span style="color:#16a085">📍 ${cityData.city}</span> (${cityData.assets.length}项资产)
-                </div>`;
-                cityData.assets.slice(0, 2).forEach(asset => {
-                    html += `<div style="font-size:10px; color:#7f8c8d; padding-left:15px; line-height:1.4;">
-                        • ${highlightKeyword(asset, kw)}
-                    </div>`;
-                });
-                if (cityData.assets.length > 2) {
-                    html += `<div style="font-size:10px; color:#bdc3c7; padding-left:15px;">
-                        还有 ${cityData.assets.length - 2} 项资产...
-                    </div>`;
-                }
-            });
-            if (cities.length > 3) {
-                html += `<div style="font-size:10px; color:#bdc3c7; margin-top:4px;">
-                    还有 ${cities.length - 3} 个城市...
-                </div>`;
-            }
+            html += `<div class="search-item-details">${renderSearchItemDetails(cities, kw, showFullDetails)}</div>`;
 
             div.innerHTML = html;
-            div.onclick = function() {
+            div.onclick = function(e) {
+                if (e.target.closest('[data-search-expand]')) {
+                    e.stopPropagation();
+                    expandCurrentReit(div, cities, kw, resultDiv);
+                    return;
+                }
                 if (cities.length > 0) {
                     var firstCity = cities[0];
                     navigateTo(firstCity.lon, firstCity.lat, 8);
