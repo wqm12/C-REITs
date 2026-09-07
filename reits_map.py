@@ -1,3 +1,4 @@
+import argparse
 import json
 import re
 import shutil
@@ -33,6 +34,13 @@ ASSET_RENAME_MAP = {
 }
 
 
+def set_output_date(value):
+    global RUN_DATE_SUFFIX, PROCESS_DIR, FINAL_HTML_PATH
+    RUN_DATE_SUFFIX = datetime.strptime(value, "%Y-%m-%d").strftime("%Y%m%d")
+    PROCESS_DIR = PROJECT_DIR / "process_files" / f"process_{RUN_DATE_SUFFIX}_map_generation"
+    FINAL_HTML_PATH = PROJECT_DIR / f"REITs详细分布图_{RUN_DATE_SUFFIX}.html"
+
+
 def replace_once(text, old, new):
     if old not in text:
         raise ValueError(f"未找到待替换片段: {old}")
@@ -51,11 +59,17 @@ def archive_existing_html_results():
         archive_path = HTML_ARCHIVE_DIR / html_path.name
         if archive_path.exists():
             archive_path = HTML_ARCHIVE_DIR / f"{html_path.stem}_{timestamp}.html"
-        shutil.move(str(html_path), str(archive_path))
+        shutil.copy2(html_path, archive_path)
 
 
 def build_source_script(sheet_name, output_suffix):
     source_text = SOURCE_SCRIPT.read_text(encoding="utf-8")
+    source_text = replace_once(source_text,
+        'RUN_DATE_SUFFIX = datetime.now().strftime("%Y%m%d")',
+        f'RUN_DATE_SUFFIX = "{RUN_DATE_SUFFIX}"')
+    source_text = replace_once(source_text,
+        'DISPLAY_DATE = datetime.now().strftime("%Y-%m")',
+        f'DISPLAY_DATE = "{RUN_DATE_SUFFIX[:4]}-{RUN_DATE_SUFFIX[4:6]}"')
     source_text = replace_once(
         source_text,
         "df = pd.read_excel(DATA_FILE)",
@@ -750,4 +764,9 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="从定位表生成 REITs 地图")
+    parser.add_argument("--date", help="清单命名日，格式 YYYY-MM-DD；默认当天")
+    args = parser.parse_args()
+    if args.date:
+        set_output_date(args.date)
     main()
