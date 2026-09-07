@@ -13,7 +13,7 @@ import pandas as pd
 PROJECT_DIR = Path(__file__).resolve().parent
 RUN_DATE_SUFFIX = datetime.now().strftime("%Y%m%d")
 DATA_FILE = PROJECT_DIR / "REITs_location_updating.xlsx"
-SOURCE_SCRIPT = PROJECT_DIR / "辅助文件" / "map_source_template.py"
+SOURCE_SCRIPT = PROJECT_DIR / "map_source_template.py"
 PROCESS_DIR = PROJECT_DIR / "process_files" / f"process_{RUN_DATE_SUFFIX}_map_generation"
 FINAL_HTML_PATH = PROJECT_DIR / f"REITs详细分布图_{RUN_DATE_SUFFIX}.html"
 HTML_ARCHIVE_DIR = PROJECT_DIR / "历史版本" / "REIT地图历史版本" / "自动归档"

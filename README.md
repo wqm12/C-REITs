@@ -21,7 +21,7 @@
 - `REITs_location_updating.xlsx`：已上市与未上市 REITs 数据源。
 - `location.csv`：城市和省份经纬度底表。
 - `echarts.min.js`、`china.js`：地图前端依赖。
-- `辅助文件/map_source_template.py`：生成器内部模板。
+- `map_source_template.py`：生成器内部模板。
 - `地图设计思路与结构说明.md`：地图结构和日常更新说明。
 - `history/`：历史发布版本。
 
