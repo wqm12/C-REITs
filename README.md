@@ -4,7 +4,7 @@
 
 在线动态入口：https://wqm12.github.io/C-REITs/
 
-## 当前版本（2026-10-23）
+## 当前版本（2026-10-30）
 
 本次发布使用最新的 `REITs_location_updating.xlsx`，页面制作月份由生成器自动适配为 `2026-10`。
 
@@ -12,7 +12,7 @@
 - 右侧统计面板按“基础设施REITs / 商业不动产REITs”分区展示。
 - 地图支持省份/城市视图、区域导航和项目搜索。
 - `index.html` 内嵌 ECharts 与中国地图资源，不依赖外部 CDN。
-- `history/20260903/` 保存上一轮线上版本；`history/20260813/`、`history/20260728/`、`history/20260701/`、`history/20260605/`、`history/20260608/` 及更早版本继续保留在 `history/`。
+- `history/20261023/` 保存上一轮线上版本；`history/20260903/`、`history/20260813/`、`history/20260728/`、`history/20260701/`、`history/20260605/`、`history/20260608/` 及更早版本继续保留在 `history/`。
 
 ## 主要文件
 
@@ -30,7 +30,7 @@
 更新 Excel 后运行：
 
 ```powershell
-python reits_map.py --date 2026-10-23
+python reits_map.py --date 2026-10-30
 ```
 
 脚本会自动生成 `REITs详细分布图_YYYYMMDD.html`，制作月份取清单命名月份；不传 --date 时取当前年月。
