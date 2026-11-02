@@ -12,7 +12,7 @@
 - 右侧统计面板按“基础设施REITs / 商业不动产REITs”分区展示。
 - 地图支持省份/城市视图、区域导航和项目搜索。
 - `index.html` 内嵌 ECharts 与中国地图资源，不依赖外部 CDN。
-- `history/20261023/` 保存上一轮线上版本；`history/20260903/`、`history/20260813/`、`history/20260728/`、`history/20260701/`、`history/20260605/`、`history/20260608/` 及更早版本继续保留在 `history/`。
+- `history/20261030/` 保存上一轮线上版本；`history/20261023/`、`history/20260903/`、`history/20260813/`、`history/20260728/`、`history/20260701/`、`history/20260605/`、`history/20260608/` 及更早版本继续保留在 `history/`。
 
 ## 主要文件
 
