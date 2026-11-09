@@ -4,9 +4,9 @@
 
 在线动态入口：https://wqm12.github.io/C-REITs/
 
-## 当前版本（2026-10-30）
+## 当前版本（2026-11-06）
 
-本次发布使用最新的 `REITs_location_updating.xlsx`，页面制作月份由生成器自动适配为 `2026-10`。
+本次发布使用最新的 `REITs_location_updating.xlsx`，页面制作月份由生成器自动适配为 `2026-11`。
 
 - 支持“已上市 REITs / 未上市 REITs”模式切换。
 - 右侧统计面板按“基础设施REITs / 商业不动产REITs”分区展示。
@@ -30,7 +30,7 @@
 更新 Excel 后运行：
 
 ```powershell
-python reits_map.py --date 2026-10-30
+python reits_map.py --date 2026-11-06
 ```
 
 脚本会自动生成 `REITs详细分布图_YYYYMMDD.html`，制作月份取清单命名月份；不传 --date 时取当前年月。
